@@ -1,4 +1,6 @@
 apply plugin: 'com.android.library'
+apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'com.jfrog.bintray'
 
 android {
     compileSdkVersion 29
@@ -44,4 +46,84 @@ dependencies {
     api 'com.google.code.gson:gson:2.8.6'
 
     api 'androidx.constraintlayout:constraintlayout:2.0.4'
+}
+
+allprojects {
+    tasks.withType(Javadoc) {
+        options.addStringOption('Xdoclint:none', '-quiet')
+        options.addStringOption('encoding', 'UTF-8')
+    }
+}
+
+def siteUrl = 'https://github.com/GORDENyou/PdaLibrary'   // 项目的主页
+def gitUrl = 'https://github.com/GORDENyou/PdaLibrary.git'   // Git仓库的url
+group = "com.gorden.library"            // Maven Group ID for the artifact，一般填你唯一的包名 发布到组织名称名字，必须填写
+//发布到JCenter上的项目名字，必须填写
+def libName = "library"
+// 版本号，下次更新是只需要更改版本号即可
+version = "1.0.0"
+install {
+    repositories.mavenInstaller {
+        // This generates POM.xml with proper parameters
+        pom {
+            project {
+                packaging 'aar'
+                // Add your description here
+                name 'An Android library for pda'     //项目的描述 你可以多写一点
+                url siteUrl
+                // Set your license
+                licenses {
+                    license {
+                        name 'Rxjava2 + retrofit2'
+                        url 'https://github.com/libin7278/Factory'
+                    }
+                }
+                developers {
+                    developer {
+                        id ''        //填写的一些基本信息
+                        name 'Jason'
+                        email 'Jasonlibin2@gmail.com'
+                    }
+                }
+                scm {
+                    connection gitUrl
+                    developerConnection gitUrl
+                    url siteUrl
+                }
+            }
+        }
+    }
+}
+
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+task javadoc(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+}
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+bintray {
+    user = "grodenlin"
+    key = "24c97e7748e5652d520342b7e50101a106351844"
+    configurations = ['archives']
+    pkg {
+        userOrg="gorden"
+        repo = "library"
+        name = "library"    //发布到JCenter上的项目名字
+        websiteUrl = siteUrl
+        vcsUrl = gitUrl
+        licenses = ["Apache-2.0"]
+        publish = true
+    }
 }

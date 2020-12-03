@@ -12,8 +12,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-import p.gordenyou.pdalibrary.listener.JDBCHelperExecuteListener;
-import p.gordenyou.pdalibrary.listener.JDBCHelperQueryListener;
+import p.gordenyou.pdalibrary.net.listener.JDBCHelperExecuteListener;
+import p.gordenyou.pdalibrary.net.listener.JDBCHelperQueryListener;
 
 public class JDBCHelper {
     private final static String USERNAME = "tiaoma";

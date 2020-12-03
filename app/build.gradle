@@ -1,27 +1,3 @@
-ext {
-    bintrayRepo = 'maven'
-    bintrayName = 'pdalibrary'
-
-    publishedGroupId = 'com.gordenlin.pdalibrary'
-    libraryName = 'pdalibrary'
-    artifact = 'pdalibrary'
-
-    libraryDescription = 'An Android library for pda'
-
-    siteUrl = 'https://github.com/zhangke3016/CircleLoading'
-    gitUrl = 'https://github.com/zhangke3016/CircleLoading.git'
-
-    libraryVersion = '1.1.0'
-
-    developerId = 'mrzk'
-    developerName = 'zhangke'
-    developerEmail = '609975727@qq.com'
-
-    licenseName = 'The Apache Software License, Version 2.0'
-    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-    allLicenses = ["Apache-2.0"]
-}
-
 plugins {
     id 'com.android.application'
 }
