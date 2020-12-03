@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="deep_grey">#DCDCDC</color>
+    <color name="edit_text_color">#B0C4DE</color>
+    <color name="background">#FFFFFF</color>
+
+    <color name="colorPrimary">#008577</color>
+    <color name="header_right_button_color">#FA8072</color>
+
+    <color name="line">#000000</color>
+</resources>

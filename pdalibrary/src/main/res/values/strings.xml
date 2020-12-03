@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">PdaLibrary</string>
+    <string name="image_description">功能图标</string>
+    <string name="test_text">ceshi</string>
+    <string name="header_left_button_text">退出</string>
+    <string name="scanner_button_text">检查</string>
+</resources>

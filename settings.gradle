@@ -1,0 +1,3 @@
+include ':pdalibrary'
+include ':app'
+rootProject.name = "PdaLibrary"

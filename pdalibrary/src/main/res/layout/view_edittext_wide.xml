@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center_vertical"
+    android:layout_marginRight="6dp"
+    android:layout_marginLeft="6dp"
+    android:background="@drawable/edittextview_background"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/et_title"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:layout_gravity="center_vertical"
+        android:layout_marginRight="3dp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:text="@string/test_text"
+        android:layout_marginLeft="3dp"
+        android:textSize="@dimen/header_button_text_size" />
+
+    <View
+        android:id="@+id/view1"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_gravity="center_vertical"
+        android:layout_marginTop="3dp"
+        android:layout_marginBottom="3dp"
+        android:layout_marginLeft="3dp"
+        android:layout_marginRight="3dp"
+        android:background="#DCDCDC" />
+
+    <EditText
+        android:id="@+id/et_edittext"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="36dp"
+        android:singleLine="true"
+        android:layout_gravity="center_vertical"
+        android:layout_marginStart="3dp"
+        android:background="@drawable/edittextview_background"
+        android:gravity="center"
+        android:text="@string/test_text"
+        android:textSize="@dimen/edit_text_size" />
+
+</LinearLayout>
