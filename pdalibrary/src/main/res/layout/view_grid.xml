@@ -15,7 +15,7 @@
         android:textSize="@dimen/grid_title_text_size"
         android:textStyle="bold" />
 
-    <ImageView
+    <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="@color/deep_grey" />
@@ -28,7 +28,7 @@
         android:scrollbars="none"
         tools:listitem="@layout/view_grid_item" />
 
-    <ImageView
+    <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="@color/deep_grey" />
