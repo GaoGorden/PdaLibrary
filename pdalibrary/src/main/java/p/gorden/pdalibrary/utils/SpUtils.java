@@ -17,12 +17,6 @@ public class SpUtils {
     public static final String JDBCUSER = "jdbc_user";
     public static final String JDBCPWB = "jdbc_pwb";
     public static final String JDBCURL = "jdbc_url";
-//    public static final String DINGDAN = "dingdan";
-//    public static final String GONGDAN = "gongdan";
-    public static final String GONGYI = "gongyi";
-//    public static final String GONGJIA = "gongjia";
-    public static final String BIANMA = "bianma";
-    public static final String XINGMING = "xingming";
 
     public static void saveStringValue(Context context, String key, String value) {
         SharedPreferences pref = context.getSharedPreferences("userInfo", MODE_PRIVATE);

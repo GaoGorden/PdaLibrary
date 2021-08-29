@@ -13,6 +13,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 
 import p.gorden.pdalibrary.net.listener.JDBCHelperExecuteListener;
+import p.gorden.pdalibrary.net.listener.JDBCHelperExecuteListener2;
 import p.gorden.pdalibrary.net.listener.JDBCHelperQueryListener;
 
 public class JDBCHelper {
@@ -20,6 +21,9 @@ public class JDBCHelper {
     public static String PASSWORD = "yin0755!";
     private final static String CLASSNAME = "net.sourceforge.jtds.jdbc.Driver";
     public static String URL = "jdbc:jtds:sqlserver://39.99.34.177;DatabaseName=LianHe";
+
+    public static final String NOT_MATCH_OPERATE_NUMBER = "操作行数不是预计行数";
+    public static final String EXECUTE_ERROR = "执行有误";
 
     private static Connection con;
     private static JDBCHelper instance;
@@ -29,6 +33,7 @@ public class JDBCHelper {
 
     private static int column;
     private static JDBCHelperExecuteListener executeListener;
+    private static JDBCHelperExecuteListener2 executeListener2;
 
     private static String queryFlag;
     private static JDBCHelperQueryListener queryListener;
@@ -46,7 +51,7 @@ public class JDBCHelper {
         if (instance == null) {
             synchronized (JDBCHelper.class) {
                 if (instance == null) {
-                    instance = new JDBCHelper(params, column, listener, null, null);
+                    instance = new JDBCHelper(params, column, null, null);
                 }
             }
 
@@ -54,6 +59,24 @@ public class JDBCHelper {
             instance.setParams(params);
             instance.setColumn(column);
             instance.setExecuteListener(listener);
+            instance.setExecuteListener2(null);
+        }
+        return instance;
+    }
+
+    public static JDBCHelper getExecuteHelper(String[] params, int column, JDBCHelperExecuteListener2 listener2) {
+        if (instance == null) {
+            synchronized (JDBCHelper.class) {
+                if (instance == null) {
+                    instance = new JDBCHelper(params, column, null, null);
+                }
+            }
+
+        } else {
+            instance.setParams(params);
+            instance.setColumn(column);
+            instance.setExecuteListener(null);
+            instance.setExecuteListener2(listener2);
         }
         return instance;
     }
@@ -71,15 +94,15 @@ public class JDBCHelper {
         if (instance == null) {
             synchronized (JDBCHelper.class) {
                 if (instance == null) {
-                    instance = new JDBCHelper(params, column, listener, null, null);
+                    instance = new JDBCHelper(params, column, null, null);
                 }
             }
 
         } else {
             instance.setParams(params);
             instance.setColumn(column);
-            instance.setExecuteListener(listener);
         }
+            instance.setExecuteListener(listener);
         return instance;
     }
 
@@ -95,22 +118,21 @@ public class JDBCHelper {
         if (instance == null) {
             synchronized (JDBCHelper.class) {
                 if (instance == null) {
-                    instance = new JDBCHelper(params, 0, null, queryFlag, listener);
+                    instance = new JDBCHelper(params, 0, queryFlag, listener);
                 }
             }
 
         } else {
             instance.setParams(params);
             instance.setQueryFlag(queryFlag);
-            instance.setQueryListener(listener);
         }
+            instance.setQueryListener(listener);
         return instance;
     }
 
-    private JDBCHelper(String[] params, int column, JDBCHelperExecuteListener executeListener, String queryFlag, JDBCHelperQueryListener queryListener) {
+    private JDBCHelper(String[] params, int column, String queryFlag, JDBCHelperQueryListener queryListener) {
         this.params = params;
         JDBCHelper.column = column;
-        JDBCHelper.executeListener = executeListener;
         JDBCHelper.queryFlag = queryFlag;
         JDBCHelper.queryListener = queryListener;
     }
@@ -125,6 +147,10 @@ public class JDBCHelper {
 
     private void setExecuteListener(JDBCHelperExecuteListener executeListener) {
         JDBCHelper.executeListener = executeListener;
+    }
+
+    private void setExecuteListener2(JDBCHelperExecuteListener2 executeListener2) {
+        JDBCHelper.executeListener2 = executeListener2;
     }
 
     private void setQueryFlag(String queryFlag) {
@@ -150,6 +176,7 @@ public class JDBCHelper {
     private static class SQLServerExecute extends AsyncTask<String, Integer, Boolean> {
         boolean result = false;
         String errorMessage = "";
+        int executeColumn = 0;
 
         @Override
         protected Boolean doInBackground(String... params) {
@@ -182,9 +209,10 @@ public class JDBCHelper {
                             //executeUpdate 返回的是影响的行数
                             con.setAutoCommit(false);
                             int testColumn = state.executeUpdate();
-                            if (testColumn != column) {
+                            executeColumn = testColumn;
+                            if (testColumn < 0) {
                                 result = false;
-                                errorMessage = "操作行数不是预计行数";
+                                errorMessage = NOT_MATCH_OPERATE_NUMBER;
                                 con.rollback();
                                 state.close();
                                 return false;
@@ -215,7 +243,13 @@ public class JDBCHelper {
         @Override
         protected void onPostExecute(Boolean aVoid) {
             super.onPostExecute(aVoid);
-            executeListener.result(result, errorMessage);
+            if (executeListener != null) {
+                executeListener.result(result, errorMessage);
+            }
+
+            if (executeListener2 != null) {
+                executeListener2.result(result, errorMessage, executeColumn);
+            }
         }
     }
 
@@ -263,7 +297,7 @@ public class JDBCHelper {
                              */
                             if (state.executeUpdate() < 0) {
                                 result = false;
-                                errorMessage = "执行有误";
+                                errorMessage = EXECUTE_ERROR;
                                 con.rollback();
                                 state.close();
                                 return false;
