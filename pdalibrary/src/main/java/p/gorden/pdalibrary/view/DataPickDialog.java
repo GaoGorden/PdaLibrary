@@ -29,13 +29,12 @@ public class DataPickDialog extends AlertDialog implements OnClickListener, OnDa
         void onDateSet(DatePicker startDatePicker, int startYear, int startMonthOfYear, int startDayOfMonth);
     }
 
-    public DataPickDialog(Context context, OnDateSetListener callBack, int year, int monthOfYear, int dayOfMonth) {
+    public DataPickDialog(Context context, int year, int monthOfYear, int dayOfMonth, OnDateSetListener callBack) {
         this(context, 0, callBack, year, monthOfYear, dayOfMonth);
     }
 
 
-    public DataPickDialog(Context context, int theme, OnDateSetListener callBack, int year, int monthOfYear,
-                          int dayOfMonth) {
+    public DataPickDialog(Context context, int theme, OnDateSetListener callBack, int year, int monthOfYear, int dayOfMonth) {
         super(context, theme);
 
         mCallBack = callBack;

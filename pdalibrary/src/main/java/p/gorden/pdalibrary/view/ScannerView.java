@@ -178,9 +178,9 @@ public class ScannerView extends LinearLayout {
         editText.setAdapter(adapter);
     }
 
-    public void setAutoComplete(Context context, ArrayList arrayList) {
+    public void setAutoComplete(Context context, ArrayList<?> arrayList) {
         this.list = (String[]) arrayList.toArray(new String[0]);
-        ArrayAdapter<String> adapter = new FilterAdapter<String>(context, arrayList);
+        ArrayAdapter<?> adapter = new FilterAdapter<>(context, arrayList);
 //        Class clazz = adapter.getClass();
 //        try {
 //            Field mFilter = clazz.getDeclaredField("mFilter");

@@ -19,7 +19,7 @@ public class WebHelper {
     // 命名空间
     String nameSpace = "http://tempuri.org/";
     // EndPoint
-    String url = "http://39.108.184.14/test/Service.asmx";
+    String url = "http://39.99.34.177/app/WebService1.asmx";
     // SOAP Action
 
 

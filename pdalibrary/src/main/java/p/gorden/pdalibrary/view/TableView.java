@@ -1,15 +1,19 @@
 package p.gorden.pdalibrary.view;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.LinearLayoutCompat;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -18,6 +22,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 import p.gorden.pdalibrary.R;
+import p.gorden.pdalibrary.common.CommonMethod;
 import p.gorden.pdalibrary.tableLayout.TableAdapter;
 import p.gorden.pdalibrary.tableLayout.TableLayout;
 
@@ -36,7 +41,9 @@ public class TableView extends LinearLayout {
     private int yema = 1;
 
     private ArrayList<String[]> table_emptylist = new ArrayList<>();
-    private ArrayList<String[]> temp_list = new ArrayList<>();
+    private ArrayList<String[]> dataList = new ArrayList<>();
+    private ArrayList<String[]> curList = new ArrayList<>(); // 当前页的信息
+//    private ArrayList<Integer> checkList = new ArrayList<>(); // 勾选的条目
 
     TextView tv_tablename; //表的标题
     TextView tv_content; //表的内容
@@ -45,6 +52,7 @@ public class TableView extends LinearLayout {
     TextView tv_yemasum; //总页码
     Button bt_shangyiye; //上一页按钮
     Button bt_xiayiye; //下一页按钮
+    LinearLayout ll_check; //选择布局
 
     public TableView(Context context) {
         this(context, null);
@@ -65,32 +73,73 @@ public class TableView extends LinearLayout {
         tv_yemasum = view.findViewById(R.id.tb_yemasum);
         bt_shangyiye = view.findViewById(R.id.tb_shangyiye);
         bt_xiayiye = view.findViewById(R.id.tb_xiayiye);
+        ll_check = view.findViewById(R.id.tb_ll_chek);
 
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.TableView);
         tv_tablename.setText(a.getText(R.styleable.TableView_title));//设置标题
         HANGSHU = a.getInt(R.styleable.TableView_columnnumber, 6);
+        boolean checkVisible = a.getBoolean(R.styleable.TableView_checkVisible, false);
+        ll_check.setVisibility(checkVisible ? View.VISIBLE : View.GONE);
+
+        if (checkVisible) {
+            initCheckLayout();
+        }
+
 
 //        view.setMinimumHeight(65 + R.dimen.table_row_height * (HANGSHU + 1));
         bt_shangyiye.setOnClickListener(view1 -> {
             if (yema - 1 >= 1) {
-                BuildTableAndPage(temp_list, --yema);
+                if (getCheckList().size() > 0) {
+
+                    CommonMethod.showErrorDialog(getContext(), "切换页面将不会保存当前已钩选项，是否继续切换页面？", "继续切换", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            BuildTableAndPage(dataList, --yema);
+                        }
+                    }, "取消", null);
+                } else {
+                    BuildTableAndPage(dataList, --yema);
+                }
             }
         });
 
         bt_xiayiye.setOnClickListener(view12 -> {
             if (yema + 1 <= Integer.parseInt(tv_yemasum.getText().toString())) {
-                BuildTableAndPage(temp_list, ++yema);
+                if (getCheckList().size() > 0) {
+                    CommonMethod.showErrorDialog(getContext(), "切换页面将不会保存当前已钩选项，是否继续切换页面？", "继续切换", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            BuildTableAndPage(dataList, ++yema);
+                        }
+                    }, "取消", null);
+                } else {
+                    BuildTableAndPage(dataList, ++yema);
+                }
+
             }
         });
 
         a.recycle();
     }
 
+    private void initCheckLayout() {
+        ll_check.removeAllViews();
+        int tableRowHeight = table.getTableRowHeight();
+
+        for (int i = 0; i < HANGSHU; i++) {
+            CheckBox checkBox = new CheckBox(getContext());
+            checkBox.setLayoutParams(new LinearLayoutCompat.LayoutParams(LayoutParams.MATCH_PARENT, tableRowHeight));
+            ll_check.addView(checkBox);
+            checkBox.setTag(i);
+        }
+    }
+
     /**
      * 设置表格内容
+     *
      * @param content 内容
      */
-    public void setContent(String content){
+    public void setContent(String content) {
         tv_content.setText(content);
     }
 
@@ -106,7 +155,7 @@ public class TableView extends LinearLayout {
         this.headers = headers;
         try {
             JSONArray jsonArray = new JSONObject(data).getJSONArray(jsonname);
-            temp_list = new ArrayList<>();
+            dataList = new ArrayList<>();
             for (int i = 0; i < jsonArray.length(); i++) {
                 String[] temp = new String[Columns.length];
                 int j = 0;
@@ -114,10 +163,10 @@ public class TableView extends LinearLayout {
                     temp[j] = jsonArray.optJSONObject(i).getString(column);
                     j++;
                 }
-                temp_list.add(temp);
+                dataList.add(temp);
             }
             yema = 1;
-            BuildTableAndPage(temp_list, yema);
+            BuildTableAndPage(dataList, yema);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -130,17 +179,45 @@ public class TableView extends LinearLayout {
      * @param list    数据
      */
     public void initTableView(String[] headers, ArrayList<String[]> list) {
-        this.temp_list = list;
+        this.dataList = list;
         this.headers = headers;
         yema = 1;
-        BuildTableAndPage(temp_list, yema);
+
+        BuildTableAndPage(dataList, yema);
     }
 
     /**
      * 刷新页面
      */
     public void refresh() {
-        BuildTableAndPage(temp_list, yema);
+        BuildTableAndPage(dataList, yema);
+    }
+
+    /**
+     * 清空表格数据
+     */
+    public void clearData() {
+        tv_content.setText("");
+        headers = new String[]{};
+        firstRowAsTitle(table_emptylist);
+    }
+
+    /**
+     * 获取选中信息
+     */
+    public ArrayList<String[]> getCheckList() {
+        ArrayList<String[]> resultList = new ArrayList<>();
+        int childCount = ll_check.getChildCount();
+        for (int i = 0; i < childCount; i++) {
+            if (((CheckBox) ll_check.getChildAt(i)).isChecked()) {
+                resultList.add(curList.get(i));
+            }
+        }
+        return resultList;
+    }
+
+    public ArrayList<String[]> getCurList() {
+        return curList;
     }
 
     /**
@@ -174,14 +251,6 @@ public class TableView extends LinearLayout {
         });
     }
 
-    /**
-     * 清空表格数据
-     */
-    public void clearData() {
-        tv_content.setText("");
-        headers = new String[]{};
-        firstRowAsTitle(table_emptylist);
-    }
 
     /**
      * 一页一页的绘制
@@ -192,11 +261,11 @@ public class TableView extends LinearLayout {
     private void BuildTableAndPage(ArrayList<String[]> temp_list, int yema) {
         int qishi = yema * HANGSHU < temp_list.size() ? yema * HANGSHU : temp_list.size();
         int jiewei = (yema - 1 > 0 ? yema - 1 : 0) * HANGSHU;
-        ArrayList<String[]> list = new ArrayList<>();
+        curList = new ArrayList<>();
         for (int i = qishi - 1; i >= jiewei; i--) {
-            list.add(temp_list.get(i));
+            curList.add(temp_list.get(i));
         }
-        firstRowAsTitle(list);
+        firstRowAsTitle(curList);
         tv_yema.setVisibility(View.VISIBLE);
         tv_yemasum.setVisibility(View.VISIBLE);
         tv_yema.setText(String.valueOf(yema));
@@ -205,5 +274,22 @@ public class TableView extends LinearLayout {
         } else {
             tv_yemasum.setText(String.valueOf((temp_list.size() / HANGSHU) + 1));
         }
+
+        refreshCheckLayout();
     }
+
+    private void refreshCheckLayout() {
+        if(ll_check.getVisibility() == View.VISIBLE){
+            int childCount = ll_check.getChildCount();
+            for (int i = 0; i < childCount; i++) {
+                ((CheckBox)ll_check.getChildAt(i)).setChecked(false);
+            }
+        }
+    }
+
+    interface CheckCallback {
+        void result(ArrayList<String> checkList);
+    }
+
 }
+

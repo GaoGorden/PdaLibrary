@@ -5,10 +5,17 @@ import android.content.DialogInterface;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
+import android.view.View;
+import android.widget.DatePicker;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -17,6 +24,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import p.gorden.pdalibrary.R;
@@ -327,5 +335,60 @@ public class CommonMethod {
             e.printStackTrace();
         }
         return firstInstallTime;
+    }
+
+
+    public static <T> ArrayList<T> getJsonArrayString(String json, Class<T> claz){
+
+        //Json的解析类对象
+        JsonParser parser = new JsonParser();
+        //将JSON的String 转成一个JsonArray对象
+        JsonArray jsonArray = parser.parse(json).getAsJsonArray();
+
+        Gson gson = new Gson();
+        ArrayList<T> resultList = new ArrayList<>();
+
+        //加强for循环遍历JsonArray
+        for (JsonElement element : jsonArray) {
+            //使用GSON，直接转成Bean对象
+            T userBean = gson.fromJson(element, claz);
+            resultList.add(userBean);
+        }
+        return resultList;
+    }
+
+    public static void showDataSelector(Context context, ScannerView scannerView, int year, int month, int day){
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setPositiveButton("设置", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                StringBuilder date = new StringBuilder();
+                scannerView.setText(date.append(String.valueOf(year)).append("年").append(month).append("月").append(day).append("日").toString());
+                dialog.dismiss();
+            }
+        });
+        builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        final AlertDialog dialog = builder.create();
+        View dialogView = View.inflate(context, R.layout.dialog_date, null);
+        final DatePicker datePicker = (DatePicker) dialogView.findViewById(R.id.datePicker);
+        dialog.setTitle("设置日期");
+        dialog.setView(dialogView);
+        dialog.show();
+        //初始化日期监听事件
+        datePicker.init(year, month - 1, day,null);
+    }
+
+    public static String getExecuteSqlstr(ArrayList<String> sqlList) {
+        StringBuilder builder = new StringBuilder();
+        for (String s : sqlList) {
+            builder.append(s).append(";");
+        }
+        builder.delete(builder.length() - 1, builder.length());
+        return builder.toString();
     }
 }

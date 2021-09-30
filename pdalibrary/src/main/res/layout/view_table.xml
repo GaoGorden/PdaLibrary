@@ -50,7 +50,15 @@
             android:id="@+id/tb_linearlayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:background="@android:color/white"
+                android:layout_marginTop="@dimen/table_row_height"
+                android:orientation="vertical"
+                android:id="@+id/tb_ll_chek"
+                android:layout_width="40dp"
+                android:layout_height="match_parent"/>
 
             <p.gorden.pdalibrary.tableLayout.FreeScrollView
                 android:layout_width="match_parent"

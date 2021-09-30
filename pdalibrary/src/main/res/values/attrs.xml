@@ -25,7 +25,7 @@
     </declare-styleable>
     <declare-styleable name="TextshowView">
         <attr name="textshowtitle" format="string" />
-        <attr name="show_edit_text" format="string"/>
+        <attr name="show_edit_text" format="string" />
     </declare-styleable>
     <declare-styleable name="NumberView">
         <attr name="numbertitle" format="string" />
@@ -70,5 +70,6 @@
     <declare-styleable name="TableView">
         <attr name="title" format="string" />
         <attr name="columnnumber" format="integer" />
+        <attr name="checkVisible" format="boolean" />
     </declare-styleable>
 </resources>

@@ -9,8 +9,8 @@
 
     <ImageView
         android:id="@+id/item_image"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
         android:layout_gravity="center"
         android:contentDescription="@string/image_description"
         tools:srcCompat="@tools:sample/avatars" />
@@ -24,6 +24,6 @@
         android:layout_marginBottom="6dp"
         android:gravity="center"
         android:text="@string/test_text"
-        android:textSize="@dimen/header_button_text_size" />
+        android:textSize="16dp" />
 
 </LinearLayout>
