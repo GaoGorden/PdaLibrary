@@ -66,8 +66,9 @@
 
     <Button
         android:id="@+id/scanner_button"
-        android:layout_width="70dp"
+        android:layout_width="wrap_content"
         android:layout_height="36dp"
+        android:minWidth="65dp"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_centerInParent="true"
