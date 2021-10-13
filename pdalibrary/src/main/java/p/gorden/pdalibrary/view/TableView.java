@@ -143,6 +143,10 @@ public class TableView extends LinearLayout {
         tv_content.setText(content);
     }
 
+    public void setTitle(String title) {
+        tv_tablename.setText(title);
+    }
+
     /**
      * 绘制表格
      *

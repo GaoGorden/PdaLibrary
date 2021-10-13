@@ -55,7 +55,7 @@ public class WebHelper {
     }
 
 
-    public WebHelper addProperty(String name, Object value) {
+    public WebHelper addProperty(String name, String value) {
         propertyMap.put(name, value);
         return instance;
     }

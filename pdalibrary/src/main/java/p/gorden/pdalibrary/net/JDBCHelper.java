@@ -210,7 +210,7 @@ public class JDBCHelper {
                             con.setAutoCommit(false);
                             int testColumn = state.executeUpdate();
                             executeColumn = testColumn;
-                            if (testColumn < 0) {
+                            if (testColumn != column) {
                                 result = false;
                                 errorMessage = NOT_MATCH_OPERATE_NUMBER;
                                 con.rollback();

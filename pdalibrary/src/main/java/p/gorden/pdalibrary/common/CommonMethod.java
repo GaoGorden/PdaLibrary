@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import p.gorden.pdalibrary.R;
 import p.gorden.pdalibrary.view.NumberView;
@@ -340,6 +342,10 @@ public class CommonMethod {
 
     public static <T> ArrayList<T> getJsonArrayString(String json, Class<T> claz){
 
+        json = jsonString(json);
+
+        json = replaceBlank(json);
+
         //Json的解析类对象
         JsonParser parser = new JsonParser();
         //将JSON的String 转成一个JsonArray对象
@@ -356,6 +362,38 @@ public class CommonMethod {
         }
         return resultList;
     }
+
+    // 去除json数据中的引号
+    private static String jsonString(String s){
+        char[] temp = s.toCharArray();
+        int n = temp.length;
+        for(int i =0;i<n;i++){
+            if(temp[i]==':'&&temp[i+1]=='"'){
+                for(int j =i+2;j<n;j++){
+                    if(temp[j]=='"'){
+                        if(temp[j+1]!=',' &&  temp[j+1]!='}'){
+                            temp[j]='”';
+                        }else if(temp[j+1]==',' ||  temp[j+1]=='}'){
+                            break ;
+                        }
+                    }
+                }
+            }
+        }
+        return new String(temp);
+    }
+
+    // 去除字符串中的空格、回车、换行符、制表符
+    public static String replaceBlank(String str) {
+        String dest = "";
+        if (str!=null) {
+            Pattern p = Pattern.compile("\\s*|\\t|\\r|\\n");
+            Matcher m = p.matcher(str);
+            dest = m.replaceAll("");
+        }
+        return dest;
+    }
+
 
     public static void showDataSelector(Context context, ScannerView scannerView, int year, int month, int day){
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
@@ -390,5 +428,49 @@ public class CommonMethod {
         }
         builder.delete(builder.length() - 1, builder.length());
         return builder.toString();
+    }
+
+    public static String getFangshi(String yuejie){
+        if(yuejie.contains("现金")){
+            return "现金订单";
+        }
+
+        if(yuejie.contains("月结")){
+            return "订单收入";
+        }
+
+        return "";
+    }
+
+    public static String getPayDate(String yuejie){
+        if(yuejie.contains("现金")){
+            return "'" + CommonMethod.getSimpleTime() + "'";
+        }
+
+        if(yuejie.contains("次月结")){
+            return "CONVERT(varchar(24), DATEADD(MONTH,1,GETDATE()), 23)";
+        }
+
+        if(yuejie.contains("月结30天")){
+            return "CONVERT(varchar(24), DATEADD(MONTH,2,GETDATE()), 23)";
+        }
+
+        if(yuejie.contains("月结60天")){
+            return "CONVERT(varchar(24), DATEADD(MONTH,3,GETDATE()), 23)";
+        }
+
+        if(yuejie.contains("月结90天")){
+            return "CONVERT(varchar(24), DATEADD(MONTH,4,GETDATE()), 23)";
+        }
+
+        if(yuejie.contains("月结120天")){
+            return "CONVERT(varchar(24), DATEADD(MONTH,5,GETDATE()), 23)";
+        }
+
+        if(yuejie.contains("月结150天")){
+            return "CONVERT(varchar(24), DATEADD(MONTH,6,GETDATE()), 23)";
+        }
+
+        return "";
     }
 }
