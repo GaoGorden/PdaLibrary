@@ -4,8 +4,23 @@
     <color name="edit_text_color">#B0C4DE</color>
     <color name="background">#FFFFFF</color>
 
-    <color name="colorPrimary">#008577</color>
+    <color name="colorPrimary">#41BBF3</color>
     <color name="header_right_button_color">#FA8072</color>
 
-    <color name="line">#000000</color>
+    <!--  TableView  -->
+    <color name="table_line_color">#DAD9D9</color>
+    <color name="table_hint_text_color">#000</color>
+    <color name="table_title_text_color">#008577</color>
+    <color name="table_title_background_color">#fff</color>
+    <color name="table_content_text_color">#000</color>
+    <color name="table_content_background_color">#fff</color>
+    <color name="table_content_background_select_color">#008577</color>
+    <color name="table_background_color">#ffffff</color>
+    <color name="table_column_background_color">#ffffff</color>
+    <color name="table_column_background_color2">#D0D1D1</color>
+
+    <color name="table_column_highlight">#FF9800</color>
+
+    <!--  chart  -->
+    <color name="chart_text_color">#000000</color>
 </resources>

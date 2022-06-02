@@ -1,19 +1,18 @@
 apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion 29
-    buildToolsVersion "29.0.3"
-
 
     defaultConfig {
-        minSdkVersion 19
+        minSdkVersion 21
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles 'consumer-rules.pro'
-        buildFeatures{
+        buildFeatures {
             dataBinding true
         }
     }
@@ -37,6 +36,7 @@ dependencies {
 
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
 
     //material
     api 'com.google.android.material:material:1.2.1'
@@ -46,6 +46,18 @@ dependencies {
     api 'com.google.code.gson:gson:2.8.6'
 
     api 'androidx.constraintlayout:constraintlayout:2.0.4'
+    // 二维码扫描
     api 'com.github.yuzhiqiang1993:zxing:2.2.5'
+    // 权限申请
     api 'com.permissionx.guolindev:permissionx:1.4.0'
+    // MpAndroidChart  https://github.com/PhilJay/MPAndroidChart
+    api 'com.github.PhilJay:MPAndroidChart:v3.1.0'
+
+    /*okhttp*/
+    implementation 'com.squareup.okhttp3:okhttp:3.10.0'
+    implementation 'com.github.franmontiel:PersistentCookieJar:v1.0.1'
+
+    // kt
+    api "androidx.core:core-ktx:1.5.0"
+    api "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }

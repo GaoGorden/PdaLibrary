@@ -4,6 +4,7 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -72,7 +73,23 @@ public class FreeScrollView extends FrameLayout {
                 int childHeight = view.getHeight();
                 int childWidth = view.getWidth();
                 int toX, toY;
+
+                Log.e("FreeScrollView", "onScroll childWidth:" + childWidth);
+                Log.e("FreeScrollView", "onScroll width:" + getWidth());
+                Log.e("FreeScrollView", "onScroll distanceX:" + distanceX);
+                Log.e("FreeScrollView", "onScroll scrollX:" + getScrollX());
+
+                Log.e("FreeScrollView", "child X:" + view.getX());
+                Log.e("FreeScrollView", "child translationX:" + view.getTranslationX());
+                Log.e("FreeScrollView", "child Y:" + view.getY());
+                Log.e("FreeScrollView", "child translationY:" + view.getTranslationY());
+                Log.e("FreeScrollView", "X:" + getX());
+                Log.e("FreeScrollView", "translationX:" + getTranslationX());
+                Log.e("FreeScrollView", "Y:" + getY());
+                Log.e("FreeScrollView", "translationY:" + getTranslationY());
+
                 if (distanceX > 0) {
+                    // 横向可以滑动
                     if (childWidth > getWidth()) {
                         if (getScrollX() + getWidth() >= childWidth) {
                             toX = childWidth - getWidth();

@@ -16,7 +16,7 @@ import p.gorden.pdalibrary.R;
 
 
 /**
- * Created by Gordenyou on 2018/3/2.
+ * Created by gorden on 2018/3/2.
  */
 
 public class SpinnerView extends LinearLayout {

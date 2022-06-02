@@ -17,7 +17,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:gravity="center_vertical"
-            android:textColor="@color/line"
+            android:textColor="@color/table_hint_text_color"
             android:textSize="@dimen/edit_text_size" />
 
         <TextView
@@ -27,24 +27,27 @@
             android:layout_gravity="center_horizontal"
             android:gravity="center_vertical"
             android:text=""
-            android:textColor="@color/line"
+            android:textColor="@color/table_hint_text_color"
             android:textSize="@dimen/edit_text_size" />
     </LinearLayout>
 
     <ImageView
+        android:id="@+id/line1"
         android:layout_width="match_parent"
-        android:layout_height="2dp"
-        android:background="@color/line" />
+        android:layout_height="1dp"
+        android:background="@color/table_line_color" />
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:background="@color/table_background_color"
         android:orientation="horizontal">
 
         <ImageView
+            android:id="@+id/line2"
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="@color/line" />
+            android:background="@color/table_background_color" />
 
         <LinearLayout
             android:id="@+id/tb_linearlayout"
@@ -53,12 +56,11 @@
             android:orientation="horizontal">
 
             <LinearLayout
-                android:background="@android:color/white"
-                android:layout_marginTop="@dimen/table_row_height"
-                android:orientation="vertical"
                 android:id="@+id/tb_ll_chek"
                 android:layout_width="40dp"
-                android:layout_height="match_parent"/>
+                android:layout_height="match_parent"
+                android:layout_marginTop="@dimen/table_column_height"
+                android:orientation="vertical" />
 
             <p.gorden.pdalibrary.tableLayout.FreeScrollView
                 android:layout_width="match_parent"
@@ -67,33 +69,35 @@
                 <p.gorden.pdalibrary.tableLayout.TableLayout
                     android:id="@+id/tb_table"
                     android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:background="@android:color/white"
-                    app:backgroundColorSelected="@color/line"
-                    app:headerColor="@color/colorPrimary"
+                    android:layout_height="wrap_content"
+                    android:background="@color/table_background_color"
+                    app:backgroundColorSelected="@color/table_content_background_select_color"
+                    app:headerColor="@color/table_title_text_color"
                     app:tableColumnPadding="10dp"
-                    app:tableDividerColor="#ddd"
-                    app:tableDividerSize="1dp"
-                    app:tableRowHeight="@dimen/table_row_height"
-                    app:tableTextColor="#333"
+                    app:tableDividerColor="@color/table_line_color"
+                    app:tableDividerSize="0.5dp"
+                    app:tableRowHeight="@dimen/table_column_height"
+                    app:tableTextColor="@color/table_content_text_color"
                     app:tableTextColorSelected="#fff"
                     app:tableTextGravity="leftCenter"
-                    app:tableTextSize="18dp" />
+                    app:tableTextSize="@dimen/table_content_text_size" />
 
             </p.gorden.pdalibrary.tableLayout.FreeScrollView>
         </LinearLayout>
     </LinearLayout>
 
     <ImageView
+        android:id="@+id/line3"
         android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/line" />
+        android:layout_height="0.5dp"
+        android:background="@color/table_line_color" />
 
 
     <LinearLayout
         android:id="@+id/tb_buttongroup"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/table_title_background_color"
         android:layout_gravity="center_horizontal"
         android:orientation="horizontal">
 
@@ -101,70 +105,64 @@
             android:layout_width="wrap_content"
             android:layout_height="30dp"
             android:layout_weight="1.5"
-            android:background="#ffffff"
             android:orientation="vertical">
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:background="#ffffff"
                 android:orientation="horizontal">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="30dp"
-                    android:background="@android:color/white"
                     android:gravity="center"
                     android:text="第 "
-                    android:textColor="@color/colorPrimary"
-                    android:textSize="@dimen/yema_text_size" />
+                    android:textColor="@color/table_title_text_color"
+                    android:textSize="@dimen/table_yema_text_size" />
 
                 <TextView
                     android:id="@+id/tb_yema"
                     android:layout_width="wrap_content"
                     android:layout_height="30dp"
-                    android:background="@android:color/white"
                     android:gravity="center"
                     android:text="1"
-                    android:textSize="@dimen/yema_text_size" />
+                    android:textColor="@color/table_content_text_color"
+                    android:textSize="@dimen/table_yema_text_size" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="30dp"
                     android:layout_marginRight="6dp"
-                    android:background="@android:color/white"
                     android:gravity="center"
                     android:text=" 页 "
-                    android:textColor="@color/colorPrimary"
-                    android:textSize="@dimen/yema_text_size" />
+                    android:textColor="@color/table_title_text_color"
+                    android:textSize="@dimen/table_yema_text_size" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="30dp"
-                    android:background="@android:color/white"
                     android:gravity="center"
                     android:text="共"
-                    android:textColor="@color/colorPrimary"
-                    android:textSize="@dimen/yema_text_size" />
+                    android:textColor="@color/table_title_text_color"
+                    android:textSize="@dimen/table_yema_text_size" />
 
                 <TextView
                     android:id="@+id/tb_yemasum"
                     android:layout_width="wrap_content"
                     android:layout_height="30dp"
-                    android:background="@android:color/white"
                     android:gravity="center"
                     android:text="1"
-                    android:textSize="@dimen/yema_text_size" />
+                    android:textColor="@color/table_content_text_color"
+                    android:textSize="@dimen/table_yema_text_size" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="30dp"
-                    android:background="@android:color/white"
                     android:gravity="center"
                     android:text=" 页"
-                    android:textColor="@color/colorPrimary"
-                    android:textSize="@dimen/yema_text_size" />
+                    android:textColor="@color/table_title_text_color"
+                    android:textSize="@dimen/table_yema_text_size" />
             </LinearLayout>
 
         </LinearLayout>
@@ -172,37 +170,38 @@
         <ImageView
             android:layout_width="1dp"
             android:layout_height="30dp"
-            android:background="@color/line" />
+            android:background="@color/table_line_color" />
 
         <Button
             android:id="@+id/tb_shangyiye"
             android:layout_width="70dp"
             android:layout_height="30dp"
             android:layout_weight="1"
-            android:background="@android:color/white"
+            android:background="@color/table_title_background_color"
             android:text="上一页"
-            android:textColor="@color/colorPrimary"
-            android:textSize="@dimen/yema_text_size" />
+            android:textColor="@color/table_title_text_color"
+            android:textSize="@dimen/table_yema_text_size" />
 
         <ImageView
             android:layout_width="1dp"
             android:layout_height="30dp"
-            android:background="@color/line" />
+            android:background="@color/table_line_color" />
 
         <Button
             android:id="@+id/tb_xiayiye"
             android:layout_width="70dp"
             android:layout_height="30dp"
             android:layout_weight="1"
-            android:background="@android:color/white"
+            android:background="@color/table_title_background_color"
             android:text="下一页"
-            android:textColor="@color/colorPrimary"
-            android:textSize="@dimen/yema_text_size" />
+            android:textColor="@color/table_title_text_color"
+            android:textSize="@dimen/table_yema_text_size" />
     </LinearLayout>
 
     <ImageView
+        android:id="@+id/line4"
         android:layout_width="match_parent"
-        android:layout_height="2dp"
-        android:background="@color/line" />
+        android:layout_height="1dp"
+        android:background="@color/table_line_color" />
 
 </LinearLayout>

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.text.InputType;
+import android.text.method.PasswordTransformationMethod;
 import android.text.method.ScrollingMovementMethod;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -18,6 +19,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.LinearLayoutCompat;
 import androidx.databinding.InverseBindingListener;
 import androidx.databinding.InverseBindingMethod;
 import androidx.databinding.InverseBindingMethods;
@@ -28,10 +30,11 @@ import java.util.Arrays;
 import java.util.List;
 
 import p.gorden.pdalibrary.R;
+import p.gorden.pdalibrary.config.PdaConfig;
 
 
 /**
- * Created by Gordenyou on 2018/3/2.
+ * Created by gorden on 2018/3/2.
  */
 @InverseBindingMethods({
         @InverseBindingMethod(type = ScannerView.class
@@ -93,6 +96,7 @@ public class ScannerView extends LinearLayout {
                 break;
             case 2:
                 editText.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                editText.setTransformationMethod(PasswordTransformationMethod.getInstance());
                 break;
             case 3:
                 editText.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL | InputType.TYPE_CLASS_NUMBER);
@@ -119,7 +123,8 @@ public class ScannerView extends LinearLayout {
         editText.setOnFocusChangeListener(new OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                if (hasFocus) {
+
+                if (hasFocus && v.getWindowToken() != null) {
                     AutoCompleteTextView view = (AutoCompleteTextView) v;
                     view.showDropDown();
                 }
@@ -134,6 +139,7 @@ public class ScannerView extends LinearLayout {
 //            editText.setSelection(editText.getText().length());
 //            return false;
 //        });
+
 
         a.recycle();
     }
@@ -165,6 +171,7 @@ public class ScannerView extends LinearLayout {
     /**
      * 设置自动补全
      */
+    @Deprecated
     public void setAutoComplete(Context context, String[] list) {
         this.list = list;
         ArrayAdapter<String> adapter = new FilterAdapter<String>(context, Arrays.asList(list));
@@ -178,6 +185,7 @@ public class ScannerView extends LinearLayout {
         editText.setAdapter(adapter);
     }
 
+    @Deprecated
     public void setAutoComplete(Context context, ArrayList<?> arrayList) {
         this.list = (String[]) arrayList.toArray(new String[0]);
         ArrayAdapter<?> adapter = new FilterAdapter<>(context, arrayList);
@@ -189,6 +197,23 @@ public class ScannerView extends LinearLayout {
 //            e.printStackTrace();
 //        }
         editText.setAdapter(adapter);
+    }
+
+    public void setAutoComplete(ArrayList<?> arrayList) {
+        this.list = (String[]) arrayList.toArray(new String[0]);
+        ArrayAdapter<?> adapter = new FilterAdapter<>(getContext(), arrayList);
+//        Class clazz = adapter.getClass();
+//        try {
+//            Field mFilter = clazz.getDeclaredField("mFilter");
+//            mFilter.set(adapter, new MyFilter());
+//        } catch (NoSuchFieldException e) {
+//            e.printStackTrace();
+//        }
+        editText.setAdapter(adapter);
+    }
+
+    public void cleanAutoComplete() {
+        editText.setAdapter(null);
     }
 
     public void setScanner_edit_text(String text) {

@@ -16,7 +16,7 @@ import p.gorden.pdalibrary.unity.UserInfo;
 
 
 /**
- * Created by Gordenyou on 2018/3/15.
+ * Created by gorden on 2018/3/15.
  */
 
 public class HeaderTitle extends LinearLayout {

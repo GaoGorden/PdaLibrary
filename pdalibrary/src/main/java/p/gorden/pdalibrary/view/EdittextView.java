@@ -18,7 +18,7 @@ import p.gorden.pdalibrary.R;
 
 
 /**
- * Created by Gordenyou on 2018/3/5.
+ * Created by gorden on 2018/3/5.
  */
 @InverseBindingMethods({
         @InverseBindingMethod(type = EdittextView.class

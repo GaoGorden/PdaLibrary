@@ -9,4 +9,8 @@ public interface TableAdapter {
 
     String[] getColumnContent(int position);
 
+    String[] getHeader();
+
+    int getPage();
+
 }

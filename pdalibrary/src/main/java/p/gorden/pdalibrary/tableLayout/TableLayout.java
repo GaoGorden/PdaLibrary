@@ -1,5 +1,6 @@
 package p.gorden.pdalibrary.tableLayout;
 
+import android.animation.ValueAnimator;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -11,7 +12,14 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import androidx.appcompat.widget.LinearLayoutCompat;
+
+import com.github.mikephil.charting.animation.ChartAnimator;
+import com.github.mikephil.charting.animation.Easing;
 
 import p.gorden.pdalibrary.R;
 
@@ -32,10 +40,15 @@ public class TableLayout extends LinearLayout implements TableColumn.Callback {
     private int backgroundColorSelected;
     private TableAdapter adapter;
     private int headerColor;
+    private String[] headers;
+    private int page;
 
     private Paint paint;
+    protected ChartAnimator mAnimator;
 
-    private String barcode;
+    private ClickCallback clickCallback;
+    private TextColorCallback textColorCallback;
+    private RowColorCallback rowColorCallback;
 
     public TableLayout(Context context) {
         super(context);
@@ -59,12 +72,47 @@ public class TableLayout extends LinearLayout implements TableColumn.Callback {
         init(attrs);
     }
 
+    public void setTableRowHeight(int tableRowHeight) {
+        this.tableRowHeight = tableRowHeight;
+        invalidate();
+    }
+
+    public void setTableTextSize(int tableTextSize) {
+        this.tableTextSize = tableTextSize;
+        invalidate();
+    }
+
+    public void setClickCallback(ClickCallback clickCallback) {
+        this.clickCallback = clickCallback;
+    }
+
+    public void setTableTextGravity(int tableTextGravity) {
+        this.tableTextGravity = tableTextGravity;
+    }
+
+    public int getPage() {
+        return page;
+    }
+
+    public void setPage(int page) {
+        this.page = page;
+    }
+
     private void init(AttributeSet attrs) {
-        Log.i("TableLayout", "init");
+        Log.e("TableLayout", "init");
         setOrientation(HORIZONTAL);
         setWillNotDraw(false);
         paint = new Paint();
         paint.setAntiAlias(true);
+
+        mAnimator = new ChartAnimator(new ValueAnimator.AnimatorUpdateListener() {
+
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                // ViewCompat.postInvalidateOnAnimation(Chart.this);
+                postInvalidate();
+            }
+        });
 
         if (attrs != null) {
             TypedArray typedArray = getResources().obtainAttributes(attrs, R.styleable.TableLayout);
@@ -95,19 +143,20 @@ public class TableLayout extends LinearLayout implements TableColumn.Callback {
         }
         if (isInEditMode()) {
             String[] content = {"a", "aa", "aaa", "aaaa", "aaaaa", "aaaaaa", "aaaaaaa", "aaaaaaaa"};
-            addView(new TableColumn(getContext(), content, this));
-            addView(new TableColumn(getContext(), content, this));
-            addView(new TableColumn(getContext(), content, this));
-            addView(new TableColumn(getContext(), content, this));
-            addView(new TableColumn(getContext(), content, this));
-            addView(new TableColumn(getContext(), content, this));
-            addView(new TableColumn(getContext(), content, this));
+            addView(new TableColumn(getContext(), 1, content, this));
+            addView(new TableColumn(getContext(), 1, content, this));
+            addView(new TableColumn(getContext(), 1, content, this));
+            addView(new TableColumn(getContext(), 1, content, this));
+            addView(new TableColumn(getContext(), 1, content, this));
+            addView(new TableColumn(getContext(), 1, content, this));
+            addView(new TableColumn(getContext(), 1, content, this));
         }
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        Log.e("TableLayout", "onMeasure");
         int width = 0;
         int height = 0;
         int childCount = getChildCount();
@@ -128,10 +177,14 @@ public class TableLayout extends LinearLayout implements TableColumn.Callback {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        Log.e("TableLayout", "onDraw");
+        Log.e("TableLayout", "onDraw,height: " + getHeight());
         paint.setColor(tableDividerColor);
+
         int drawnWidth = 0;
         int maxRowCount = 0;
         int childCount = getChildCount();
+        // 绘制每列之间的Divider
         for (int i = 0; i < childCount; i++) {
             TableColumn column = (TableColumn) getChildAt(i);
             maxRowCount = Math.max(maxRowCount, column.getChildCount());
@@ -144,18 +197,22 @@ public class TableLayout extends LinearLayout implements TableColumn.Callback {
             }
             drawnWidth += column.getWidth();
         }
+
+        // 绘制每行之间的Divider
         for (int i = 1; i < maxRowCount; i++) {
-            float y = i * tableRowHeight;
+            float y = i * (tableRowHeight + tableDividerSize * 2);
             if (tableDividerSize > 1) {
                 canvas.drawRect(0, y - tableDividerSize / 2, getWidth(), y + tableDividerSize / 2, paint);
             } else {
                 canvas.drawRect(0, y - tableDividerSize, getWidth(), y, paint);
             }
         }
-        canvas.drawRect(0, 0, tableDividerSize, getHeight(), paint);
-        canvas.drawRect(getWidth() - tableDividerSize, 0, getWidth(), getHeight(), paint);
-        canvas.drawRect(0, 0, getWidth(), tableDividerSize, paint);
-        canvas.drawRect(0, getHeight() - tableDividerSize, getWidth(), getHeight(), paint);
+
+        // 绘制 Layout 之外的Divider
+        canvas.drawRect(0, 0, tableDividerSize, getHeight(), paint); // 左
+        canvas.drawRect(getWidth() - tableDividerSize, 0, getWidth(), getHeight(), paint); // 右
+        canvas.drawRect(0, 0, getWidth(), tableDividerSize, paint); // 上
+        canvas.drawRect(0, getHeight() - tableDividerSize, getWidth(), getHeight(), paint); // 下
     }
 
     @Override
@@ -191,6 +248,10 @@ public class TableLayout extends LinearLayout implements TableColumn.Callback {
         return tableTextSize;
     }
 
+    public String[] getHeaders() {
+        return headers;
+    }
+
     public int getHeaderColor() {
         return headerColor;
     }
@@ -208,6 +269,7 @@ public class TableLayout extends LinearLayout implements TableColumn.Callback {
     }
 
     public void setAdapter(TableAdapter adapter) {
+        Log.e("TableLayout", "setAdapter");
         this.adapter = adapter;
         useAdapter();
     }
@@ -215,8 +277,9 @@ public class TableLayout extends LinearLayout implements TableColumn.Callback {
     private void useAdapter() {
         removeAllViews();
         int count = adapter.getColumnCount();
+        headers = adapter.getHeader();
         for (int i = 0; i < count; i++) {
-            addView(new TableColumn(getContext(), adapter.getColumnContent(i), this));
+            addView(new TableColumn(getContext(),adapter.getPage(), adapter.getColumnContent(i), this));
         }
     }
 
@@ -225,35 +288,55 @@ public class TableLayout extends LinearLayout implements TableColumn.Callback {
         for (int i = 0; i < childCount; i++) {
             TableColumn tableColumn = (TableColumn) getChildAt(i);
             if (tableColumn.getRight() >= x) {
-//                if (i==0){
-//                    getChildAt(i).gett
-//                    return;
-//                }
                 if (i == 0) {
                     tableColumn.onClick(y);
-                    barcode = tableColumn.getBarcode();
-                    ClickEvent();
+                    if (clickCallback != null) {
+                        clickCallback.selectedContent(tableColumn.getColumnText());
+                    }
                     return;
                 }
             }
         }
     }
 
-    public void ClickEvent() {
-//        String headertitle = BaseActivity.getHeadertitle();
-////        int m = BaseActivity.m;
-////        if(headertitle != null){
-////            switch (headertitle){
-////                case "资产盘点":
-////                    if(barcode != null && m == 4){
-////                        Activity_ZCPD activity_zcpd = new Activity_ZCPD();
-////                        activity_zcpd.showLayoutDialog(getContext(), barcode, Activity_ZCPD.str_danhao);
-////                    }
-////            }
-////        }
+    public void setTextColorCallback(TextColorCallback textColorCallback) {
+        this.textColorCallback = textColorCallback;
     }
 
-    public String getBarcode() {
-        return barcode;
+    public TextColorCallback getTextColorCallback() {
+        return textColorCallback;
     }
+
+    public RowColorCallback getRowColorCallback() {
+        return rowColorCallback;
+    }
+
+    public void setRowColorCallback(RowColorCallback rowColorCallback) {
+        this.rowColorCallback = rowColorCallback;
+    }
+
+    public interface TextColorCallback {
+        /**
+         * 设置不同行的颜色
+         *
+         * @param textView 当前TextView
+         * @param title    当前列的标题
+         */
+        void setTextViewColor(TextView textView, String title);
+    }
+
+    public interface RowColorCallback {
+        /**
+         * 设置不同行的颜色
+         *
+         * @param textView 当前TextView
+         * @param rowIndex 当前行
+         */
+        void setTextViewColor(int page, int rowIndex, TextView textView);
+    }
+
+    public interface ClickCallback {
+        void selectedContent(String content);
+    }
+
 }

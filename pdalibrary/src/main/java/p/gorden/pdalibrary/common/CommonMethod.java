@@ -1,7 +1,10 @@
 package p.gorden.pdalibrary.common;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
@@ -11,11 +14,14 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.FragmentActivity;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import com.permissionx.guolindev.PermissionX;
+import com.permissionx.guolindev.callback.RequestCallback;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -25,10 +31,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import p.gorden.pdalibrary.MyScanActivity;
 import p.gorden.pdalibrary.R;
 import p.gorden.pdalibrary.view.NumberView;
 import p.gorden.pdalibrary.view.ScannerView;
@@ -175,15 +183,18 @@ public class CommonMethod {
         return time;
     }
 
-    public static String getFormatTime(String format){
+    public static String getFormatTime(String format) {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format);
         Date date = new Date(System.currentTimeMillis());
         String time = simpleDateFormat.format(date);
         return time;
     }
 
-    private final static int PLAYER_OK = 1;
-    private final static int PLAYER_NG = 0;
+    // 生成自定义的单号
+    public static String getFormatReceipt(String prefix) {
+        return prefix + CommonMethod.getFormatTime("yyMMddHHmmss");
+    }
+
 
     /**
      * 播放提示音
@@ -207,11 +218,12 @@ public class CommonMethod {
     }
 
     /**
-     * 检查输入
+     * 检查输入并报错
      *
      * @param context
      * @param views
      */
+    @Deprecated
     public static boolean checkScannerView(Context context, LinearLayout[] views) {
         for (LinearLayout view : views) {
 
@@ -240,10 +252,72 @@ public class CommonMethod {
     }
 
     /**
+     * 检查输入并报错
+     *
+     * @param views
+     */
+    public static boolean checkScannerView(LinearLayout... views) {
+        for (LinearLayout view : views) {
+            Context context = view.getContext();
+            if (view instanceof ScannerViewWide) {
+                ScannerViewWide scannerViewWide = (ScannerViewWide) view;
+                if (scannerViewWide.getText().equals("")) {
+                    showErrorDialog(context, scannerViewWide.getTitle().replace(" ", "") + "不能为空！");
+                    return false;
+                }
+            } else if (view instanceof ScannerView) {
+                ScannerView scannerView = (ScannerView) view;
+                if (scannerView.getText().equals("")) {
+                    showErrorDialog(context, scannerView.getTitle().replace(" ", "") + "不能为空！");
+                    return false;
+                }
+            } else if (view instanceof TextshowView) {
+                TextshowView textshowView = (TextshowView) view;
+                if (textshowView.getText().equals("")) {
+                    showErrorDialog(context, textshowView.getTitle().replace(" ", "") + "不能为空！");
+                    return false;
+                }
+            }
+
+        }
+        return true;
+    }
+
+    /**
+     * 检查输入
+     *
+     * @param views
+     */
+    public static boolean checkScannerViewWithoutAlarm(LinearLayout[] views) {
+        for (LinearLayout view : views) {
+
+            if (view instanceof ScannerViewWide) {
+                ScannerViewWide scannerViewWide = (ScannerViewWide) view;
+                if (scannerViewWide.getText().equals("")) {
+                    return false;
+                }
+            } else if (view instanceof ScannerView) {
+                ScannerView scannerView = (ScannerView) view;
+                if (scannerView.getText().equals("")) {
+                    return false;
+                }
+            } else if (view instanceof TextshowView) {
+                TextshowView textshowView = (TextshowView) view;
+                if (textshowView.getText().equals("")) {
+                    return false;
+                }
+            }
+
+        }
+        return true;
+    }
+
+    /**
      * 文本置空
      *
      * @param views
      */
+    @Deprecated
     public static void setEmpty(LinearLayout[] views) {
         for (LinearLayout view : views) {
             if (view instanceof ScannerViewWide) {
@@ -252,7 +326,27 @@ public class CommonMethod {
             } else if (view instanceof ScannerView) {
                 ScannerView scannerView = (ScannerView) view;
                 scannerView.setText("");
-            }else if (view instanceof TextshowView) {
+            } else if (view instanceof TextshowView) {
+                TextshowView textshowView = (TextshowView) view;
+                textshowView.setText("");
+            }
+        }
+    }
+
+    /**
+     * 文本置空
+     *
+     * @param views
+     */
+    public static void setViewTextEmpty(LinearLayout ... views) {
+        for (LinearLayout view : views) {
+            if (view instanceof ScannerViewWide) {
+                ScannerViewWide scannerViewWide = (ScannerViewWide) view;
+                scannerViewWide.setText("");
+            } else if (view instanceof ScannerView) {
+                ScannerView scannerView = (ScannerView) view;
+                scannerView.setText("");
+            } else if (view instanceof TextshowView) {
                 TextshowView textshowView = (TextshowView) view;
                 textshowView.setText("");
             }
@@ -293,6 +387,17 @@ public class CommonMethod {
             }
         }
         return keyList;
+    }
+
+    //根据map的value获取map的key
+    public static String getKey(Map<String, String> map, String value) {
+        String key = "";
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            if (value.equals(entry.getValue())) {
+                key = entry.getKey();
+            }
+        }
+        return key;
     }
 
     // 集合是否包含类似字符串
@@ -340,7 +445,7 @@ public class CommonMethod {
     }
 
 
-    public static <T> ArrayList<T> getJsonArrayString(String json, Class<T> claz){
+    public static <T> ArrayList<T> getJsonArrayString(String json, Class<T> claz) {
 
         json = jsonString(json);
 
@@ -364,17 +469,17 @@ public class CommonMethod {
     }
 
     // 去除json数据中的引号
-    private static String jsonString(String s){
+    private static String jsonString(String s) {
         char[] temp = s.toCharArray();
         int n = temp.length;
-        for(int i =0;i<n;i++){
-            if(temp[i]==':'&&temp[i+1]=='"'){
-                for(int j =i+2;j<n;j++){
-                    if(temp[j]=='"'){
-                        if(temp[j+1]!=',' &&  temp[j+1]!='}'){
-                            temp[j]='”';
-                        }else if(temp[j+1]==',' ||  temp[j+1]=='}'){
-                            break ;
+        for (int i = 0; i < n; i++) {
+            if (temp[i] == ':' && temp[i + 1] == '"') {
+                for (int j = i + 2; j < n; j++) {
+                    if (temp[j] == '"') {
+                        if (temp[j + 1] != ',' && temp[j + 1] != '}') {
+                            temp[j] = '”';
+                        } else if (temp[j + 1] == ',' || temp[j + 1] == '}') {
+                            break;
                         }
                     }
                 }
@@ -386,16 +491,19 @@ public class CommonMethod {
     // 去除字符串中的空格、回车、换行符、制表符
     public static String replaceBlank(String str) {
         String dest = "";
-        if (str!=null) {
-            Pattern p = Pattern.compile("\\s*|\\t|\\r|\\n");
+        if (str != null) {
+//            Pattern p = Pattern.compile("\\s*|\\t|\\r|\\n");
+            Pattern p = Pattern.compile("\\t|\\r|\\n");
             Matcher m = p.matcher(str);
             dest = m.replaceAll("");
+            // 处理字符串中的中文斜杠
+            dest = dest.replace("\\", "/");
         }
         return dest;
     }
 
 
-    public static void showDataSelector(Context context, ScannerView scannerView, int year, int month, int day){
+    public static void showDataSelector(Context context, ScannerView scannerView, int year, int month, int day) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setPositiveButton("设置", new DialogInterface.OnClickListener() {
             @Override
@@ -418,59 +526,30 @@ public class CommonMethod {
         dialog.setView(dialogView);
         dialog.show();
         //初始化日期监听事件
-        datePicker.init(year, month - 1, day,null);
+        datePicker.init(year, month - 1, day, null);
     }
 
     public static String getExecuteSqlstr(ArrayList<String> sqlList) {
         StringBuilder builder = new StringBuilder();
         for (String s : sqlList) {
-            builder.append(s).append(";");
+            builder.append(s).append("ç");
         }
         builder.delete(builder.length() - 1, builder.length());
         return builder.toString();
     }
 
-    public static String getFangshi(String yuejie){
-        if(yuejie.contains("现金")){
-            return "现金订单";
-        }
-
-        if(yuejie.contains("月结")){
-            return "订单收入";
-        }
-
-        return "";
-    }
-
-    public static String getPayDate(String yuejie){
-        if(yuejie.contains("现金")){
-            return "'" + CommonMethod.getSimpleTime() + "'";
-        }
-
-        if(yuejie.contains("次月结")){
-            return "CONVERT(varchar(24), DATEADD(MONTH,1,GETDATE()), 23)";
-        }
-
-        if(yuejie.contains("月结30天")){
-            return "CONVERT(varchar(24), DATEADD(MONTH,2,GETDATE()), 23)";
-        }
-
-        if(yuejie.contains("月结60天")){
-            return "CONVERT(varchar(24), DATEADD(MONTH,3,GETDATE()), 23)";
-        }
-
-        if(yuejie.contains("月结90天")){
-            return "CONVERT(varchar(24), DATEADD(MONTH,4,GETDATE()), 23)";
-        }
-
-        if(yuejie.contains("月结120天")){
-            return "CONVERT(varchar(24), DATEADD(MONTH,5,GETDATE()), 23)";
-        }
-
-        if(yuejie.contains("月结150天")){
-            return "CONVERT(varchar(24), DATEADD(MONTH,6,GETDATE()), 23)";
-        }
-
-        return "";
+    public static void jumpToScan(FragmentActivity activity, int requestCode){
+        PermissionX.init(activity)
+                .permissions(Manifest.permission.CAMERA)
+                .request(new RequestCallback() {
+                    @Override
+                    public void onResult(boolean allGranted, List<String> grantedList, List<String> deniedList) {
+                        if (!allGranted) {
+                            Toast.makeText(activity, "扫描需要摄像头权限！", Toast.LENGTH_LONG).show();
+                        } else {
+                            activity.startActivityForResult(new Intent(activity, MyScanActivity.class),requestCode);
+                        }
+                    }
+                });
     }
 }

@@ -30,7 +30,7 @@ import p.gorden.pdalibrary.R;
 
 
 /**
- * Created by Gordenyou on 2018/3/2.
+ * Created by gorden on 2018/3/2.
  */
 @InverseBindingMethods({
         @InverseBindingMethod(type = ScannerViewWide.class

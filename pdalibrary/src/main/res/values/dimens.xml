@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="grid_title_text_size">18sp</dimen>
-    <dimen name="grid_item_text_size">16sp</dimen>
     <dimen name="header_title_text_size">22sp</dimen>
     <dimen name="header_button_text_size">18sp</dimen>
     <dimen name="header_height">40dp</dimen>
     <dimen name="edit_text_size">16sp</dimen>
     <dimen name="header_button_margin">6dp</dimen>
 
-    <dimen name="table_row_height">36dp</dimen>
-    <dimen name="yema_text_size">16sp</dimen>
+    <!--  GridView  -->
+    <dimen name="grid_title_text_size">18sp</dimen>
+    <dimen name="grid_item_text_size">16sp</dimen>
+
+    <!--  TableView  -->
+    <dimen name="table_column_height">36dp</dimen>
+    <dimen name="table_yema_text_size">16sp</dimen>
+    <dimen name="table_content_text_size">16sp</dimen>
 
 </resources>

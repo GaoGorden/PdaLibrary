@@ -8,7 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -23,12 +23,13 @@ import java.util.ArrayList;
 
 import p.gorden.pdalibrary.R;
 import p.gorden.pdalibrary.common.CommonMethod;
+import p.gorden.pdalibrary.config.PdaConfig;
 import p.gorden.pdalibrary.tableLayout.TableAdapter;
 import p.gorden.pdalibrary.tableLayout.TableLayout;
 
 
 /**
- * Created by Gordenyou on 2019/8/29.
+ * Created by gorden on 2019/8/29.
  * 自定义表格控件
  */
 
@@ -54,6 +55,12 @@ public class TableView extends LinearLayout {
     Button bt_xiayiye; //下一页按钮
     LinearLayout ll_check; //选择布局
 
+    ImageView line1;
+    ImageView line2;
+    ImageView line3;
+    ImageView line4;
+    LinearLayout ll_yema;
+
     public TableView(Context context) {
         this(context, null);
     }
@@ -75,11 +82,21 @@ public class TableView extends LinearLayout {
         bt_xiayiye = view.findViewById(R.id.tb_xiayiye);
         ll_check = view.findViewById(R.id.tb_ll_chek);
 
+        line1 = view.findViewById(R.id.line1);
+        line2 = view.findViewById(R.id.line2);
+        line3 = view.findViewById(R.id.line3);
+        line4 = view.findViewById(R.id.line4);
+        ll_yema = view.findViewById(R.id.tb_buttongroup);
+
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.TableView);
         tv_tablename.setText(a.getText(R.styleable.TableView_title));//设置标题
         HANGSHU = a.getInt(R.styleable.TableView_columnnumber, 6);
         boolean checkVisible = a.getBoolean(R.styleable.TableView_checkVisible, false);
         ll_check.setVisibility(checkVisible ? View.VISIBLE : View.GONE);
+
+        int gravity = a.getInt(R.styleable.TableView_textGravity, 1);
+        table.setTableTextGravity(gravity);
+
 
         if (checkVisible) {
             initCheckLayout();
@@ -94,11 +111,11 @@ public class TableView extends LinearLayout {
                     CommonMethod.showErrorDialog(getContext(), "切换页面将不会保存当前已钩选项，是否继续切换页面？", "继续切换", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            BuildTableAndPage(dataList, --yema);
+                            buildTableAndPage(dataList, --yema);
                         }
                     }, "取消", null);
                 } else {
-                    BuildTableAndPage(dataList, --yema);
+                    buildTableAndPage(dataList, --yema);
                 }
             }
         });
@@ -109,11 +126,11 @@ public class TableView extends LinearLayout {
                     CommonMethod.showErrorDialog(getContext(), "切换页面将不会保存当前已钩选项，是否继续切换页面？", "继续切换", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            BuildTableAndPage(dataList, ++yema);
+                            buildTableAndPage(dataList, ++yema);
                         }
                     }, "取消", null);
                 } else {
-                    BuildTableAndPage(dataList, ++yema);
+                    buildTableAndPage(dataList, ++yema);
                 }
 
             }
@@ -122,17 +139,6 @@ public class TableView extends LinearLayout {
         a.recycle();
     }
 
-    private void initCheckLayout() {
-        ll_check.removeAllViews();
-        int tableRowHeight = table.getTableRowHeight();
-
-        for (int i = 0; i < HANGSHU; i++) {
-            CheckBox checkBox = new CheckBox(getContext());
-            checkBox.setLayoutParams(new LinearLayoutCompat.LayoutParams(LayoutParams.MATCH_PARENT, tableRowHeight));
-            ll_check.addView(checkBox);
-            checkBox.setTag(i);
-        }
-    }
 
     /**
      * 设置表格内容
@@ -145,6 +151,170 @@ public class TableView extends LinearLayout {
 
     public void setTitle(String title) {
         tv_tablename.setText(title);
+    }
+
+    public String getTitle() {
+        return tv_tablename.getText().toString();
+    }
+
+    /**
+     * 设置首列点击事件
+     *
+     * @param clickCallback
+     */
+    public void setClickCallback(TableLayout.ClickCallback clickCallback) {
+        table.setClickCallback(clickCallback);
+    }
+
+    /**
+     * 跳转到特定某一页
+     *
+     * @param page
+     */
+    public void setPage(int page) {
+        int totalPage = dataList.size() / HANGSHU;
+        if (page < 0 || page > totalPage) {
+            throw new IllegalArgumentException("TableView: Current page is illegal!");
+        }
+        yema = page;
+        buildTableAndPage(dataList, yema);
+    }
+
+    /**
+     * 获取当前页码
+     *
+     * @return
+     */
+    public int getPage() {
+        return yema;
+    }
+
+    public void setTextColorCallback(TableLayout.TextColorCallback textColorCallback) {
+        table.setTextColorCallback(textColorCallback);
+    }
+
+    public void setRowColorCallback(TableLayout.RowColorCallback rowColorCallback) {
+        table.setRowColorCallback(rowColorCallback);
+    }
+
+    /**
+     * 跳转到内容所在页
+     *
+     * @param title   内容标题
+     * @param content 内容
+     */
+    public void gotoSpecificPage(String title, String content) {
+        int columnIndex = findTitleColumnIndex(title);
+
+        int contentPage = findContentPage(columnIndex, content);
+
+        if (contentPage != -1) {
+            setPage(contentPage);
+        }
+    }
+
+    /**
+     * 跳转到内容所在行
+     *
+     * @param title   内容标题
+     * @param content 内容
+     */
+    public void gotoSpecificRow(String title, String content) {
+        int titleColumnIndex = findTitleColumnIndex(title);
+
+        int contentPage = findContentPage(titleColumnIndex, content);
+
+        if (contentPage != -1) {
+            setPage(contentPage);
+        }
+
+        int contentRow = findContentRow(title, content);
+        table.setRowColorCallback(new TableLayout.RowColorCallback() {
+            @Override
+            public void setTextViewColor(int page, int rowIndex, TextView textView) {
+                if (contentRow == rowIndex && page == contentPage) {
+                    textView.setBackgroundColor(getContext().getResources().getColor(R.color.table_column_highlight));
+                }
+            }
+        });
+
+        if (contentPage != -1) {
+            setPage(contentPage);
+        }
+    }
+
+
+    /**
+     * 找到到内容所在页
+     *
+     * @param title   内容标题
+     * @param content 内容
+     */
+    public int findSpecificPage(String title, String content) {
+        int columnIndex = findTitleColumnIndex(title);
+
+        int contentPage = findContentPage(columnIndex, content);
+
+        if (contentPage != -1) {
+            return contentPage;
+        } else {
+            return 1;
+        }
+    }
+
+    /**
+     * 找到标题所在列
+     *
+     * @param title 标题
+     * @return 所在列
+     */
+    private int findTitleColumnIndex(String title) {
+        int index = 0;
+        for (String header : headers) {
+            if (header.equals(title)) {
+                return index;
+            }
+            index++;
+        }
+        return -1;
+    }
+
+    /**
+     * 找到内容所在页码
+     *
+     * @param content     内容
+     * @param columnIndex 当前列的序号
+     * @return 所在页码
+     */
+    private int findContentPage(int columnIndex, String content) {
+        int index = 0;
+        for (String[] strings : dataList) {
+            if (strings[columnIndex].equals(content)) {
+                return index / HANGSHU + 1;
+            }
+            index++;
+        }
+        return -1;
+    }
+
+    /**
+     * 找到内容所在行数
+     *
+     * @param content 内容
+     * @param title   内容标题
+     * @return 所在行
+     */
+    public int findContentRow(String title, String content) {
+
+        int columnIndex = findTitleColumnIndex(title);
+        int index = 0;
+        for (String[] strings : curList) {
+            if (strings[columnIndex].equals(content)) {
+                return index + 1;
+            }
+            index++;
+        }
+        return -1;
     }
 
     /**
@@ -170,7 +340,7 @@ public class TableView extends LinearLayout {
                 dataList.add(temp);
             }
             yema = 1;
-            BuildTableAndPage(dataList, yema);
+            buildTableAndPage(dataList, yema);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -182,19 +352,30 @@ public class TableView extends LinearLayout {
      * @param headers 表格中文列标题
      * @param list    数据
      */
-    public void initTableView(String[] headers, ArrayList<String[]> list) {
+    public void initTableView(String[] headers, ArrayList<String[]> list, String danhao) {
         this.dataList = list;
         this.headers = headers;
         yema = 1;
 
-        BuildTableAndPage(dataList, yema);
+        buildTableAndPage(dataList, yema);
+        if (!danhao.isEmpty()) {
+            tv_tablename.setVisibility(VISIBLE);
+            tv_content.setVisibility(VISIBLE);
+            setContent("(当前单号：" + danhao + ")");
+        } else {
+            tv_tablename.setVisibility(GONE);
+            tv_content.setVisibility(GONE);
+        }
+
+        if (!PdaConfig.ISKANBAN)
+            CommonMethod.showRightDialog(getContext(), getTitle() + "加载成功～");
     }
 
     /**
      * 刷新页面
      */
     public void refresh() {
-        BuildTableAndPage(dataList, yema);
+        buildTableAndPage(dataList, yema);
     }
 
     /**
@@ -252,6 +433,16 @@ public class TableView extends LinearLayout {
                 }
                 return contents;
             }
+
+            @Override
+            public String[] getHeader() {
+                return headers;
+            }
+
+            @Override
+            public int getPage() {
+                return yema;
+            }
         });
     }
 
@@ -262,11 +453,11 @@ public class TableView extends LinearLayout {
      * @param temp_list 表格数据
      * @param yema      具体页码
      */
-    private void BuildTableAndPage(ArrayList<String[]> temp_list, int yema) {
-        int qishi = yema * HANGSHU < temp_list.size() ? yema * HANGSHU : temp_list.size();
-        int jiewei = (yema - 1 > 0 ? yema - 1 : 0) * HANGSHU;
+    private void buildTableAndPage(ArrayList<String[]> temp_list, int yema) {
+        int jiewei = Math.min(yema * HANGSHU, temp_list.size());
+        int qishi = (Math.max(yema - 1, 0)) * HANGSHU;
         curList = new ArrayList<>();
-        for (int i = qishi - 1; i >= jiewei; i--) {
+        for (int i = qishi; i < jiewei; i++) {
             curList.add(temp_list.get(i));
         }
         firstRowAsTitle(curList);
@@ -283,11 +474,23 @@ public class TableView extends LinearLayout {
     }
 
     private void refreshCheckLayout() {
-        if(ll_check.getVisibility() == View.VISIBLE){
+        if (ll_check.getVisibility() == View.VISIBLE) {
             int childCount = ll_check.getChildCount();
             for (int i = 0; i < childCount; i++) {
-                ((CheckBox)ll_check.getChildAt(i)).setChecked(false);
+                ((CheckBox) ll_check.getChildAt(i)).setChecked(false);
             }
+        }
+    }
+
+    private void initCheckLayout() {
+        ll_check.removeAllViews();
+        int tableRowHeight = table.getTableRowHeight();
+
+        for (int i = 0; i < HANGSHU; i++) {
+            CheckBox checkBox = new CheckBox(getContext());
+            checkBox.setLayoutParams(new LinearLayoutCompat.LayoutParams(LayoutParams.MATCH_PARENT, tableRowHeight));
+            ll_check.addView(checkBox);
+            checkBox.setTag(i);
         }
     }
 

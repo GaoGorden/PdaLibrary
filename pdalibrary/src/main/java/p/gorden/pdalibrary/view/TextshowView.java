@@ -2,6 +2,7 @@ package p.gorden.pdalibrary.view;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.text.method.ScrollingMovementMethod;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,7 +18,7 @@ import p.gorden.pdalibrary.R;
 
 
 /**
- * Created by Gordenyou on 2018/3/8.
+ * Created by gorden on 2018/3/8.
  */
 @InverseBindingMethods({
         @InverseBindingMethod(type = TextshowView.class
@@ -46,6 +47,8 @@ public class TextshowView extends LinearLayout {
 
         title.setText(a.getText(R.styleable.TextshowView_textshowtitle));
         title.setHint(a.getText(R.styleable.TextshowView_textshowtitle));
+
+        content.setMovementMethod(ScrollingMovementMethod.getInstance());
         a.recycle();
     }
 

@@ -16,7 +16,7 @@ import p.gorden.pdalibrary.R;
 import p.gorden.pdalibrary.adapter.GridAdapter;
 
 /**
- * Created by GORDENyou on 2020/2/1.
+ * Created by gorden on 2020/2/1.
  * mailbox:1193688859@qq.com
  * have nothing but……
  */

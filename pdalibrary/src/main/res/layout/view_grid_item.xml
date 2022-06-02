@@ -24,6 +24,6 @@
         android:layout_marginBottom="6dp"
         android:gravity="center"
         android:text="@string/test_text"
-        android:textSize="16dp" />
+        android:textSize="@dimen/grid_item_text_size" />
 
 </LinearLayout>

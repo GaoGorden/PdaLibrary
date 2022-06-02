@@ -1,7 +1,7 @@
 package p.gorden.pdalibrary.unity;
 
 /**
- * Created by Gordenyou on 2018/3/30.
+ * Created by gorden on 2018/3/30.
  */
 
 public class UserInfo {

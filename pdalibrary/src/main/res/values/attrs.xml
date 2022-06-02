@@ -71,5 +71,18 @@
         <attr name="title" format="string" />
         <attr name="columnnumber" format="integer" />
         <attr name="checkVisible" format="boolean" />
+        <attr name="textGravity" format="enum">
+            <enum name="center" value="0" />
+            <enum name="leftCenter" value="1" />
+            <enum name="rightCenter" value="2" />
+        </attr>
+    </declare-styleable>
+
+    <declare-styleable name="BarChartView">
+        <attr name="text_size_bar" format="dimension"/>
+    </declare-styleable>
+
+    <declare-styleable name="PieChartView">
+        <attr name="text_size_pie" format="dimension"/>
     </declare-styleable>
 </resources>

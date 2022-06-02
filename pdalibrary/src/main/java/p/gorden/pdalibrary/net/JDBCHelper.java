@@ -2,6 +2,8 @@ package p.gorden.pdalibrary.net;
 
 import android.os.AsyncTask;
 
+import androidx.appcompat.app.AlertDialog;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -9,35 +11,85 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 
+import p.gorden.pdalibrary.config.PdaConfig;
 import p.gorden.pdalibrary.net.listener.JDBCHelperExecuteListener;
 import p.gorden.pdalibrary.net.listener.JDBCHelperExecuteListener2;
+import p.gorden.pdalibrary.net.listener.JDBCHelperExecuteListener3;
 import p.gorden.pdalibrary.net.listener.JDBCHelperQueryListener;
 
 public class JDBCHelper {
-    public static String USERNAME = "sa";
-    public static String PASSWORD = "yin0755!";
+
     private final static String CLASSNAME = "net.sourceforge.jtds.jdbc.Driver";
-    public static String URL = "jdbc:jtds:sqlserver://39.99.34.177;DatabaseName=LianHe";
 
     public static final String NOT_MATCH_OPERATE_NUMBER = "操作行数不是预计行数";
-    public static final String EXECUTE_ERROR = "执行有误";
+    public static final String EXECUTE_ERROR = "操作行数有误";
 
     private static Connection con;
     private static JDBCHelper instance;
+    private static String errorMessage;
 
-    //********所需参数***************
-    private String[] params;
-
-    private static int column;
     private static JDBCHelperExecuteListener executeListener;
     private static JDBCHelperExecuteListener2 executeListener2;
+    private static JDBCHelperExecuteListener3 executeListener3;
 
-    private static String queryFlag;
     private static JDBCHelperQueryListener queryListener;
-    //********所需参数***************
+
+    private static AlertDialog dialog;
+
+
+    // 连接实例
+    static class JDBCConnect {
+        private String[] params;
+
+        private int column;
+
+        private String flag;
+
+
+        public String[] getParams() {
+            return params;
+        }
+
+        public void setParams(String[] params) {
+            this.params = params;
+        }
+
+        public int getColumn() {
+            return column;
+        }
+
+        public void setColumn(int column) {
+            this.column = column;
+        }
+
+        public String getFlag() {
+            return flag;
+        }
+
+        public void setFlag(String flag) {
+            this.flag = flag;
+        }
+    }
+
+    private static final ArrayList<JDBCConnect> connectPools = new ArrayList<>();
+
+
+    public static JDBCHelper getJDBCHelper(AlertDialog alertDialog) {
+        if (instance == null) {
+            synchronized (JDBCHelper.class) {
+                if (instance == null) {
+                    instance = new JDBCHelper();
+                }
+            }
+
+        }
+        dialog = alertDialog;
+        return instance;
+    }
 
     /**
      * 获取操作（增加，删除，更新）实例
@@ -47,37 +99,45 @@ public class JDBCHelper {
      * @param listener 回调接口
      * @return JDBCHelper实例
      */
+    @Deprecated
     public static JDBCHelper getExecuteHelper(String[] params, int column, JDBCHelperExecuteListener listener) {
         if (instance == null) {
             synchronized (JDBCHelper.class) {
                 if (instance == null) {
-                    instance = new JDBCHelper(params, column, null, null);
+                    instance = new JDBCHelper();
                 }
             }
 
         } else {
-            instance.setParams(params);
-            instance.setColumn(column);
+            JDBCConnect connect = new JDBCConnect();
+            connect.setParams(params);
+            connect.setColumn(column);
+            connectPools.add(connect);
+
             instance.setExecuteListener(listener);
             instance.setExecuteListener2(null);
         }
         return instance;
     }
 
+    @Deprecated
     public static JDBCHelper getExecuteHelper(String[] params, int column, JDBCHelperExecuteListener2 listener2) {
         if (instance == null) {
             synchronized (JDBCHelper.class) {
                 if (instance == null) {
-                    instance = new JDBCHelper(params, column, null, null);
+                    instance = new JDBCHelper();
                 }
             }
 
-        } else {
-            instance.setParams(params);
-            instance.setColumn(column);
-            instance.setExecuteListener(null);
-            instance.setExecuteListener2(listener2);
         }
+        JDBCConnect connect = new JDBCConnect();
+        connect.setParams(params);
+        connect.setColumn(column);
+        connectPools.add(connect);
+
+        instance.setExecuteListener(null);
+        instance.setExecuteListener2(listener2);
+
         return instance;
     }
 
@@ -89,20 +149,23 @@ public class JDBCHelper {
      * @param listener 回调接口
      * @return JDBCHelper实例
      */
+    @Deprecated
     public static JDBCHelper getExecuteHelper(LinkedList<String> set_sql, int column, JDBCHelperExecuteListener listener) {
         String[] params = set_sql.toArray(new String[0]);
         if (instance == null) {
             synchronized (JDBCHelper.class) {
                 if (instance == null) {
-                    instance = new JDBCHelper(params, column, null, null);
+                    instance = new JDBCHelper();
                 }
             }
 
-        } else {
-            instance.setParams(params);
-            instance.setColumn(column);
         }
-            instance.setExecuteListener(listener);
+        JDBCConnect connect = new JDBCConnect();
+        connect.setParams(params);
+        connect.setColumn(column);
+        connectPools.add(connect);
+
+        instance.setExecuteListener(listener);
         return instance;
     }
 
@@ -114,123 +177,194 @@ public class JDBCHelper {
      * @param listener  回调接口
      * @return JDBCHelper实例
      */
+    @Deprecated
     public static JDBCHelper getQueryHelper(String[] params, String queryFlag, JDBCHelperQueryListener listener) {
         if (instance == null) {
             synchronized (JDBCHelper.class) {
                 if (instance == null) {
-                    instance = new JDBCHelper(params, 0, queryFlag, listener);
+                    instance = new JDBCHelper();
                 }
             }
 
-        } else {
-            instance.setParams(params);
-            instance.setQueryFlag(queryFlag);
         }
-            instance.setQueryListener(listener);
+
+        JDBCConnect connect = new JDBCConnect();
+        connect.setParams(params);
+        connect.setFlag(queryFlag);
+        connectPools.add(connect);
+
+        instance.setQueryListener(listener);
         return instance;
     }
 
-    private JDBCHelper(String[] params, int column, String queryFlag, JDBCHelperQueryListener queryListener) {
-        this.params = params;
-        JDBCHelper.column = column;
-        JDBCHelper.queryFlag = queryFlag;
-        JDBCHelper.queryListener = queryListener;
+    private JDBCHelper() {
+        getConnection();
+        errorMessage = "";
     }
 
-    private void setParams(String[] params) {
-        this.params = params;
+    private void getConnection() {
+        try {
+            if (con == null || con.isClosed()) {
+                // 使用Class加载驱动程序
+                Class.forName(CLASSNAME);
+                //连接数据库
+                con = DriverManager.getConnection(PdaConfig.getDatabaseUrl(), PdaConfig.SQLUSERNAME, PdaConfig.SQLPWS);
+            }
+        } catch (ClassNotFoundException e) {
+            System.out.println("加载驱动程序出错");
+            errorMessage = e.getMessage();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            errorMessage = e.getMessage();
+        }
     }
 
-    private void setColumn(int column) {
-        JDBCHelper.column = column;
-    }
-
-    private void setExecuteListener(JDBCHelperExecuteListener executeListener) {
+    @Deprecated
+    public void setExecuteListener(JDBCHelperExecuteListener executeListener) {
         JDBCHelper.executeListener = executeListener;
     }
 
-    private void setExecuteListener2(JDBCHelperExecuteListener2 executeListener2) {
+    @Deprecated
+    public void setExecuteListener2(JDBCHelperExecuteListener2 executeListener2) {
         JDBCHelper.executeListener2 = executeListener2;
     }
 
-    private void setQueryFlag(String queryFlag) {
-        JDBCHelper.queryFlag = queryFlag;
+    public void setExecuteListener3(JDBCHelperExecuteListener3 executeListener3) {
+        JDBCHelper.executeListener3 = executeListener3;
     }
 
-    private void setQueryListener(JDBCHelperQueryListener queryListener) {
+
+    public void setQueryListener(JDBCHelperQueryListener queryListener) {
         JDBCHelper.queryListener = queryListener;
     }
 
+    public void addQuerySql(String queryFlag, String[] params) {
+        JDBCConnect connect = new JDBCConnect();
+        connect.setFlag(queryFlag);
+        connect.setParams(params);
+        connectPools.add(connect);
+        sqlQuery();
+    }
+
+    public void addExecuteSql(int column, String[] params) {
+        JDBCConnect connect = new JDBCConnect();
+        connect.setColumn(column);
+        connect.setParams(params);
+        connectPools.add(connect);
+        sqlExecute();
+    }
+
+    public void addExecuteSqlN(String executeFlag, String[] params) {
+        JDBCConnect connect = new JDBCConnect();
+        connect.setFlag(executeFlag);
+        connect.setParams(params);
+        connectPools.add(connect);
+        sqlExecuteN();
+    }
+
     public void sqlExecute() {
-        new SQLServerExecute().execute(params);
+//        for (JDBCConnect connect : connectPools) {
+//            new SQLServerExecute().execute(connect);
+//        }
+
+        Iterator<JDBCConnect> iterator = connectPools.iterator();
+        if(iterator.hasNext()){
+            new SQLServerExecute().execute(iterator.next());
+            iterator.remove();
+        }
     }
 
     public void sqlExecuteN() {
-        new SQLServerExecuteN().execute(params);
+//        for (JDBCConnect connect : connectPools) {
+//            new SQLServerExecuteN().execute(connect);
+//        }
+
+        Iterator<JDBCConnect> iterator = connectPools.iterator();
+        if(iterator.hasNext()){
+            new SQLServerExecuteN().execute(iterator.next());
+            iterator.remove();
+        }
     }
 
     public void sqlQuery() {
-        new SQLServerQuery().execute(params);
+//        for (JDBCConnect connect : connectPools) {
+//            new SQLServerQuery().execute(connect);
+//        }
+
+        Iterator<JDBCConnect> iterator = connectPools.iterator();
+        if(iterator.hasNext()){
+            new SQLServerQuery().execute(iterator.next());
+            iterator.remove();
+        }
     }
 
-    private static class SQLServerExecute extends AsyncTask<String, Integer, Boolean> {
+    public void release() {
+        if (dialog != null) {
+            dialog = null;
+        }
+    }
+
+    private static class SQLServerExecute extends AsyncTask<JDBCConnect, Integer, Boolean> {
         boolean result = false;
-        String errorMessage = "";
         int executeColumn = 0;
 
         @Override
-        protected Boolean doInBackground(String... params) {
-
-            try {
-                if (con == null || con.isClosed()) {
-                    // 使用Class加载驱动程序
-                    Class.forName(CLASSNAME);
-                    //连接数据库
-                    con = DriverManager.getConnection(URL, USERNAME, PASSWORD);
-                }
-            } catch (ClassNotFoundException e) {
-                System.out.println("加载驱动程序出错");
-                errorMessage = e.getMessage();
-                return false;
-            } catch (Exception e) {
-                System.out.println(e.getMessage());
-                errorMessage = e.getMessage();
-                return false;
+        protected void onPreExecute() {
+            if (dialog != null) {
+                dialog.show();
             }
+        }
 
+        @Override
+        protected Boolean doInBackground(JDBCConnect... connects) {
+
+
+            JDBCConnect connect = connects[0];
             try {
-//                String sql = "Update TCcang set rong = 1.0 where cang = '备件仓'";
-                //创建Statement,操作数据
-                PreparedStatement state;
-                if (con != null && params.length != 0) {
-                    for (String param : params) {
-                        state = con.prepareStatement(param);
-                        if (state != null) {
-                            //executeUpdate 返回的是影响的行数
-                            con.setAutoCommit(false);
-                            int testColumn = state.executeUpdate();
-                            executeColumn = testColumn;
-                            if (testColumn != column) {
-                                result = false;
-                                errorMessage = NOT_MATCH_OPERATE_NUMBER;
-                                con.rollback();
-                                state.close();
-                                return false;
-                            }
-                            state.close();
-                        }
-                    }
-                    result = true;
-                    con.commit();
-                    con.setAutoCommit(true);
+                errorMessage = "";
 
-                    //回收资源
-                    con.close();
+                PreparedStatement state;
+                if (con == null || con.isClosed()) {
+                    instance.getConnection();
                 }
+
+                if(con == null){
+                    return false;
+                }
+
+                String[] params = connect.params;
+                for (String param : params) {
+                    state = con.prepareStatement(param);
+                    if (state != null) {
+                        //executeUpdate 返回的是影响的行数
+                        con.setAutoCommit(false);
+                        int testColumn = state.executeUpdate();
+                        executeColumn = testColumn;
+                        if (testColumn != connect.column) {
+                            result = false;
+                            errorMessage = NOT_MATCH_OPERATE_NUMBER;
+                            con.rollback();
+                            state.close();
+
+                            con.close();
+                            connectPools.remove(connect);
+                            return false;
+                        }
+                        state.close();
+                    }
+                }
+                result = true;
+                con.commit();
+                con.setAutoCommit(true);
+
+                //回收资源
+                con.close();
+                connectPools.remove(connect);
             } catch (java.sql.SQLException e) {
                 e.printStackTrace();
                 try {
                     con.close();
+                    connectPools.remove(connect);
                 } catch (SQLException ex) {
                     ex.printStackTrace();
                 }
@@ -242,7 +376,11 @@ public class JDBCHelper {
 
         @Override
         protected void onPostExecute(Boolean aVoid) {
-            super.onPostExecute(aVoid);
+
+            if (dialog != null) {
+                dialog.dismiss();
+            }
+
             if (executeListener != null) {
                 executeListener.result(result, errorMessage);
             }
@@ -250,43 +388,48 @@ public class JDBCHelper {
             if (executeListener2 != null) {
                 executeListener2.result(result, errorMessage, executeColumn);
             }
+
+            if (executeListener == null && executeListener2 == null) {
+                throw new IllegalArgumentException("请先设置执行回调setExecuteListener()！");
+            }
         }
     }
 
-    private static class SQLServerExecuteN extends AsyncTask<String, Integer, Boolean> {
+    private static class SQLServerExecuteN extends AsyncTask<JDBCConnect, Integer, String> {
         boolean result = false;
-        String errorMessage = "";
+        int executeColumn = 0;
 
         @Override
-        protected Boolean doInBackground(String... params) {
-
-            try {
-                if (con == null || con.isClosed()) {
-                    // 使用Class加载驱动程序
-                    Class.forName(CLASSNAME);
-                    //连接数据库
-                    con = DriverManager.getConnection(URL, USERNAME, PASSWORD);
-                }
-            } catch (ClassNotFoundException e) {
-                System.out.println("加载驱动程序出错");
-                errorMessage = e.getMessage();
-                return false;
-            } catch (Exception e) {
-                System.out.println(e.getMessage());
-                errorMessage = e.getMessage();
-                return false;
+        protected void onPreExecute() {
+            if (dialog != null) {
+                dialog.show();
             }
+        }
+
+        @Override
+        protected String doInBackground(JDBCConnect... connects) {
+
+            JDBCConnect connect = connects[0];
 
             try {
-//                String sql = "Update TCcang set rong = 1.0 where cang = '备件仓'";
-                //创建Statement,操作数据
+                errorMessage = "";
+
                 PreparedStatement state;
-                if (con != null && params.length != 0) {
-                    for (String param : params) {
-                        state = con.prepareStatement(param);
-                        if (state != null) {
-                            //executeUpdate 返回的是影响的行数
-                            con.setAutoCommit(false);
+                if (con == null || con.isClosed()) {
+                    instance.getConnection();
+                }
+
+                if(con == null){
+                    result = false;
+                    return connect.flag;
+                }
+
+                String[] params = connect.params;
+                for (String param : params) {
+                    state = con.prepareStatement(param);
+                    if (state != null) {
+                        //executeUpdate 返回的是影响的行数
+                        con.setAutoCommit(false);
                             /*
                             用于执行给定 SQL 语句，该语句可能为 INSERT、UPDATE 或 DELETE 语句，或者不返回任何内容的 SQL                           语句（如 SQL DDL 语句）。
                             例如 ：CREATE TABLE 和 DROP TABLE。INSERT、UPDATE 或 DELETE 语句的效果是修改表中零行或                            多行中的一列或多列。
@@ -294,101 +437,138 @@ public class JDBCHelper {
                             使用executeUpdate方法是因为在 createTableCoffees 中的 SQL 语句是 DDL （数据定义语言）语                            句。创建表，改变表，删除表都是 DDL 语句的例子，要用 executeUpdate 方法来执行。
 
                             也可以从它的名字里看出，方法 executeUpdate 也被用于执行更新表 SQL 语句。实际上，相对于创建表                            来说，executeUpdate 用于更新表的时间更多，因为表只需要创建一次，但经常被更新。
-                             */
-                            if (state.executeUpdate() < 0) {
-                                result = false;
-                                errorMessage = EXECUTE_ERROR;
-                                con.rollback();
-                                state.close();
-                                return false;
-                            }
-                            state.close();
-                        }
-                    }
-                    result = true;
-                    con.commit();
-                    con.setAutoCommit(true);
 
-                    //回收资源
-                    con.close();
+                            若没有影响任何数据： executeColumn = 0
+                             */
+                        if ((executeColumn = state.executeUpdate()) < 0) {
+                            errorMessage = EXECUTE_ERROR;
+                            con.rollback();
+
+                            state.close();
+                            con.close();
+                            connectPools.remove(connect);
+
+                            result = false;
+                            return connect.flag;
+                        }
+                        state.close();
+                    }
                 }
+
+                con.commit();
+                con.setAutoCommit(true);
+
+                //回收资源
+                con.close();
+                connectPools.remove(connect);
+
+                result = true;
+                return connect.flag;
             } catch (java.sql.SQLException e) {
                 e.printStackTrace();
+                errorMessage = e.getMessage();
                 try {
                     con.close();
+                    connectPools.remove(connect);
                 } catch (SQLException ex) {
                     ex.printStackTrace();
                 }
-                errorMessage = e.getMessage();
-                return false;
+                result = false;
+                return connect.flag;
             }
-            return true;
         }
 
         @Override
-        protected void onPostExecute(Boolean aVoid) {
-            super.onPostExecute(aVoid);
-            executeListener.result(result, errorMessage);
+        protected void onPostExecute(String flag) {
+
+            if (dialog != null) {
+                dialog.dismiss();
+            }
+
+            if (executeListener != null) {
+                executeListener.result(result, errorMessage);
+            }
+
+            if (executeListener2 != null) {
+                executeListener2.result(result, errorMessage, executeColumn);
+            }
+
+            if (executeListener3 != null) {
+                executeListener3.result(flag, result, errorMessage, executeColumn);
+            }
+
+            if (executeListener == null && executeListener2 == null && executeListener3 == null) {
+                throw new IllegalArgumentException("请先设置执行回调setExecuteListener()！");
+            }
         }
     }
 
-    private static class SQLServerQuery extends AsyncTask<String, Integer, Void> {
-        PreparedStatement state = null;
-        ArrayList<LinkedHashMap<String, Object>> list;
-        String errorMessage = "";
+    private static class SQLServerQuery extends AsyncTask<JDBCConnect, Integer, String> {
+        ArrayList<LinkedHashMap<String, Object>> list = new ArrayList<>();
 
         @Override
-        protected Void doInBackground(String... params) {
-
-            try {
-                if (con == null || con.isClosed()) {
-                    // 使用Class加载驱动程序
-                    Class.forName(CLASSNAME);
-                    //连接数据库
-                    con = DriverManager.getConnection(URL, USERNAME, PASSWORD);
-                }
-            } catch (ClassNotFoundException e) {
-                System.out.println("加载驱动程序出错");
-                errorMessage = e.getMessage();
-            } catch (Exception e) {
-                System.out.println(e.getMessage());
-                errorMessage = e.getMessage();
+        protected void onPreExecute() {
+            if (dialog != null) {
+                dialog.show();
             }
-
-            try {
-//                String sql = "Select * from TCcang where wei = '113'";
-                if (con != null && params.length != 0) {
-                    state = con.prepareStatement(params[0]);
-                    if (state != null) {
-                        ResultSet resultData = state.executeQuery();
-                        list = convertList(resultData);
-//                        if (list.size() == 0)
-//                            errorMessage = "经查询，没有数据";
-                        state.close();
-                    }
-                    con.close();
-                }
-            } catch (java.sql.SQLException e) {
-                e.printStackTrace();
-                errorMessage = e.getMessage();
-            }
-            return null;
         }
 
         @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-            if (con != null) {
+        protected String doInBackground(JDBCConnect... connects) {
+
+            JDBCConnect connect = connects[0];
+            try {
+//                String sql = "Select * from TCcang where wei = '113'";
+                errorMessage = "";
+                PreparedStatement state;
+                if (con == null || con.isClosed()) {
+                    instance.getConnection();
+                }
+
+                if(con == null){
+                    return connect.flag;
+                }
+
+                String[] params = connect.params;
+                state = con.prepareStatement(params[0]);
+                list.clear();
+                if (state != null) {
+                    ResultSet resultData = state.executeQuery();
+                    list = convertList(resultData);
+//                        if (list.size() == 0)
+//                            errorMessage = "经查询，没有数据";
+                    state.close();
+                }
+                con.close();
+                connectPools.remove(connect);
+            } catch (java.sql.SQLException e) {
+                e.printStackTrace();
+                errorMessage = e.getMessage();
                 try {
                     con.close();
+                    connectPools.remove(connect);
                 } catch (SQLException ex) {
                     ex.printStackTrace();
                 }
             }
-            if (errorMessage.equals("")) {
-                queryListener.success(list, queryFlag);
+            return connect.flag;
+        }
+
+        @Override
+        protected void onPostExecute(String queryFlag) {
+
+            if (dialog != null) {
+                dialog.dismiss();
+            }
+
+            if (queryListener != null) {
+                if (errorMessage.equals("")) {
+                    queryListener.success(list, queryFlag);
+                } else {
+                    queryListener.fail(errorMessage);
+                }
             } else {
-                queryListener.fail(errorMessage);
+                throw new IllegalArgumentException("请先设置查询回调setQueryListener()！");
             }
         }
     }

@@ -19,7 +19,7 @@ import p.gorden.pdalibrary.R;
 
 
 /**
- * Created by Gordenyou on 2018/3/8.
+ * Created by gorden on 2018/3/8.
  */
 @InverseBindingMethods({
         @InverseBindingMethod(type = NumberView.class

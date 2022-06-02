@@ -7,7 +7,7 @@ import androidx.fragment.app.FragmentPagerAdapter;
 import java.util.List;
 
 /**
- * Created by Gordenyou on 2018/1/4.
+ * Created by gorden on 2018/1/4.
  */
 
 public class FragmentAdapter extends FragmentPagerAdapter {
